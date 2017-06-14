@@ -1,0 +1,26 @@
+@base-font-size: 16px;
+@base-font-family: arial;
+@base-bg-color: #393939;
+@base-font-color: rgba(255,255,255,.7);
+@base-border-color: rgba(255,255,255,.2);
+@base-link-color: #0096cf;
+
+html {
+	font-size: @base-font-size;
+	font-family: @base-font-family;
+	background-color: @base-bg-color;
+	color: @base-font-color;
+	body {
+		border-color: @base-border-color;
+		a {
+			color: @base-link-color;
+			&:not([href]) {
+				text-decoration: underline;
+				cursor: pointer;
+			}
+		}
+		.hover-span {
+			color: @base-link-color;
+		}
+	}
+}
