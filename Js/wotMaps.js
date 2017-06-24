@@ -131,6 +131,10 @@ function buildUserData(data) {
 			}
 		});
 	}
+	var mostKilledTank = mostKilled ? tankList.data[mostKilled.id] : undefined;
+	var maxXpTank = tankList.data[data.statistics.all.max_xp_tank_id];
+	var maxFragsTank = tankList.data[data.statistics.all.max_frags_tank_id];
+	var maxDamageTank = tankList.data[data.statistics.all.max_damage_tank_id];
 	var userDataTemplate = '\
 	<table id="player-table">\
 		<tbody>\
@@ -149,7 +153,7 @@ function buildUserData(data) {
 			<tr><td class="ac-left-cell"><span>Battle Life Time:  </span></td><td class="ac-right-cell"><span>' + ((data.private.battle_life_time/60)/60).toFixed(1) + ' hours</span></td></tr>' +
 			(tankKills ? 
 			'<tr><td colspan="2" class="ac-single-cell"><div><span>Most Killed Tank:  </span><span>' + mostKilled.value + ' kills - ' + ((mostKilled.value / data.statistics.all.frags) * 100).toFixed(3) + '%</span>\
-			<span>' + tankList.data[mostKilled.id].name + '</span><img src="' + tankList.data[mostKilled.id].images.big_icon + '"/></div></td></tr>\
+			<span>' + (mostKilledTank ? mostKilledTank.name : "Unknown Tank") + '</span><img src="' + (mostKilledTank ? mostKilledTank.images.big_icon : "") + '"/></div></td></tr>\
 			' : '') +
 			'<tr><td colspan="2" class="ac-single-cell"><span>End Private Data</span></td></tr>' +
 			'' : '') +
@@ -161,7 +165,7 @@ function buildUserData(data) {
 			<tr><td class="ac-left-cell"><span>XP Earned:  </span></td><td class="ac-right-cell"><span>' + data.statistics.all.xp + '</span></td></tr>\
 			<tr><td class="ac-left-cell"><span>Average XP:	</span></td><td class="ac-right-cell"><span>' + data.statistics.all.battle_avg_xp + '</span></td></tr>\
 			<tr><td colspan="2" class="ac-single-cell"><div><span>Max XP:  </span><span>' + data.statistics.all.max_xp + '</span>\
-			<span>' + tankList.data[data.statistics.all.max_xp_tank_id].name + '</span><img src="' + tankList.data[data.statistics.all.max_xp_tank_id].images.big_icon + '"/></div></td></tr>\
+			<span>' + (maxXpTank ? maxXpTank.name : "Unknown Tank" ) + '</span><img src="' + (maxXpTank ? maxXpTank.images.big_icon : "") + '"/></div></td></tr>\
 			<tr><td class="ac-left-cell"><span>Tanks Spotted:  </span></td><td class="ac-right-cell"><span>' + data.statistics.all.spotted + '</span></td></tr>\
 			<tr><td class="ac-left-cell"><span>Kills:  </span></td><td class="ac-right-cell"><span>' + data.statistics.all.frags + '</span></td></tr>\
 			<tr><td class="ac-left-cell"><span>Average Kills:  </span></td><td class="ac-right-cell"><span>' + ((data.statistics.all.frags / data.statistics.all.battles)).toFixed(3) + '</span></td></tr>\
@@ -174,9 +178,9 @@ function buildUserData(data) {
 			<tr><td class="ac-left-cell"><span>Damage Dealt:  </span></td><td class="ac-right-cell"><span>' + data.statistics.all.damage_dealt + '</span></td></tr>\
 			<tr><td class="ac-left-cell"><span>Average Damage Done:	 </span></td><td class="ac-right-cell"><span>' + ((data.statistics.all.damage_dealt / data.statistics.all.battles)).toFixed(1) + '</span></td></tr>\
 			<tr><td colspan="2" class="ac-single-cell"><div><span>Max Kills:  </span><span>' + data.statistics.all.max_frags + '</span>\
-			<span>' + tankList.data[data.statistics.all.max_frags_tank_id].name + '</span><img src="' + tankList.data[data.statistics.all.max_frags_tank_id].images.big_icon + '"/></div></td></tr>\
+			<span>' + (maxFragsTank ? maxFragsTank.name : "Unknown Tank") + '</span><img src="' + (maxFragsTank ? maxFragsTank.images.big_icon : "") + '"/></div></td></tr>\
 			<tr><td colspan="2" class="ac-single-cell"><div><span>Max Damage:  </span><span>' + data.statistics.all.max_damage + '</span>\
-			<span>' + tankList.data[data.statistics.all.max_damage_tank_id].name + '</span><img src="' + tankList.data[data.statistics.all.max_damage_tank_id].images.big_icon + '"/></div></td></tr>\
+			<span>' + (maxDamageTank ? maxDamageTank.name : "Unknown Tank") + '</span><img src="' + (maxDamageTank ? maxDamageTank.images.big_icon : "") + '"/></div></td></tr>\
 			<tr><td class="ac-left-cell"><span>Deaths:	</span></td><td class="ac-right-cell"><span>' + (data.statistics.all.battles - data.statistics.all.survived_battles) + '</span></td></tr>\
 			<tr><td class="ac-left-cell"><span>K/D:	 </span></td><td class="ac-right-cell"><span>' + (data.statistics.all.frags / (data.statistics.all.battles - data.statistics.all.survived_battles)).toFixed(3) + '</span></td></tr>\
 			<tr><td class="ac-left-cell"><span>Damage Received:	 </span></td><td class="ac-right-cell"><span>' + data.statistics.all.damage_received + '</span></td></tr>\

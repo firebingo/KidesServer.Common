@@ -1,0 +1,54 @@
+@small-border-width: 0.0625rem;
+@base-border-color: rgba(129,129,129,1);
+@table-cell-padding: 0.55rem;
+
+#discord-widget {
+	text-align: center;
+}
+
+#message-list {
+	text-align: center;
+	h2 { margin-bottom: 0; }
+	#message-table-loading {
+		padding: 1rem 0;
+	}
+	#message-table-area {
+		display: flex;
+		flex-direction: column;
+		#message-table-loading {
+			margin: auto;
+		}
+	}
+}
+
+.list-table {
+	border-collapse: collapse;
+	margin: auto;
+	th, td {
+		padding: @table-cell-padding;
+		border: @small-border-width solid @base-border-color;
+	}
+	.list-table-header {
+		&.header-sortable {
+			cursor: pointer;
+		}
+	}
+	.user-removed-row {
+		color: rgba(255,255,255,.25);
+	}
+	.list-table-footer {
+		border: @small-border-width solid @base-border-color;
+		#message-list-limit-dd {
+			width: 2.5rem;
+		}
+		td {
+			border: none;
+		}
+		.footer-right {
+			display: flex;
+			input {
+				margin-left: auto;
+			}
+		}
+	}
+}
