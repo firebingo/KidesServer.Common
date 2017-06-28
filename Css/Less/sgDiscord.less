@@ -1,6 +1,8 @@
 @small-border-width: 0.0625rem;
 @base-border-color: rgba(129,129,129,1);
 @table-cell-padding: 0.55rem;
+@user-removed-color: rgba(255,255,255,.25);
+@user-banned-color: #AF0000;
 
 #discord-widget {
 	text-align: center;
@@ -21,6 +23,15 @@
 	}
 }
 
+#user-info {
+	text-align: center;
+	flex-direction: column;
+	padding: 1rem 0;
+	#user-info-table-area {
+		display: flex;
+	}
+}
+
 .list-table {
 	border-collapse: collapse;
 	margin: auto;
@@ -33,8 +44,16 @@
 			cursor: pointer;
 		}
 	}
+	.list-table-cell {
+		&.cell-clickable {
+			cursor: pointer;
+		}
+	}
 	.user-removed-row {
-		color: rgba(255,255,255,.25);
+		color: @user-removed-color;
+	}
+	.user-banned-row {
+		color: @user-banned-color;
 	}
 	.list-table-footer {
 		border: @small-border-width solid @base-border-color;
@@ -51,4 +70,56 @@
 			}
 		}
 	}
+}
+
+.info-table {
+	margin: auto;
+	border: @small-border-width solid @base-border-color;
+	display: flex;
+	flex-direction: column;
+	.info-table-row {
+		display: flex;
+		align-items: center;
+		margin: auto;
+		.avatar-cell {
+			width: 200px;
+			height: 200px;
+			padding: 0.2rem;
+			margin: 0.2rem;
+			border: @small-border-width solid @base-border-color;
+			img {
+				width: 100%;
+			}
+		}
+		.info-cell {
+			padding: @table-cell-padding;
+			.info-cell-area {
+				display: flex;
+				flex-direction: column;
+				text-align: left;
+				div {
+					padding: 0.55rem;
+					display: flex;
+					flex-direction: column;
+				}
+			}
+		}
+	}
+}
+
+#user-info-chart-area {
+	display: flex;
+	flex-direction: column;
+}
+
+.bold-text {
+	font-weight: bold;
+}
+
+.user-removed {
+	color: @user-removed-color;
+}
+
+.user-banned {
+	color:@user-banned-color;
 }

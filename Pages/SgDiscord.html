@@ -1,8 +1,10 @@
 <html>
 	<link rel="stylesheet" type="text/css" href="../Css/generic.min.css">
-	<link rel="stylesheet" type="text/css" href="../Css/sgDiscord.min.css">
+	<link rel="stylesheet" type="text/css" href="../Css/Less/sgDiscord.min.css">
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 	<script src="../Js/jquery-3.1.0.min.js"></script>
-	<script src="../Js/sgDiscord.min.js" type="application/javascript" charset="UTF-8"></script>
+	<script src="../Js/moment.min.js"></script>
+	<script src="../Js/sgDiscord.min.js" type="application/javascript" charset="UTF-8"></script>	
 	<body>
 		<div id="discord-widget">
 			<h2>/r/Symphogear Discord</h2>
@@ -15,6 +17,10 @@
 				<table id="message-list-table" class="list-table">
 				</table>
 			</div>
+		</div>
+		<div id="user-info" style="display:none;">
+			<h2>User Info</h2>
+			<div id="user-info-table-area"></div>
 		</div>
 	</body>
 </html>
