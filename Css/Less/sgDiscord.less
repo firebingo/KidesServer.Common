@@ -1,0 +1,144 @@
+@small-border-width: 0.0625rem;
+@base-border-color: rgba(129,129,129,1);
+@table-cell-padding: 0.55rem;
+@user-removed-color: rgba(255,255,255,.25);
+@user-banned-color: #AF0000;
+
+#discord-widget {
+	text-align: center;
+}
+
+#generic-error {
+	text-align: center;
+}
+
+#message-list {
+	text-align: center;
+	h2 { margin-bottom: 0; }
+	#message-table-loading {
+		padding: 1rem 0;
+	}
+	#message-table-area {
+		display: flex;
+		flex-direction: column;
+		#message-table-loading {
+			margin: auto;
+		}
+	}
+}
+
+#user-info {
+	text-align: center;
+	flex-direction: column;
+	padding: 1rem 0;
+	#user-info-table-area {
+		display: flex;
+	}
+}
+
+#role-message-list {
+	text-align: center;
+	h2 { margin-bottom: 0; }
+	#role-message-table-loading {
+		padding: 1rem 0;
+	}
+	#role-message-table-area {
+		display: flex;
+		flex-direction: column;
+		#role-message-table-loading {
+			margin: auto;
+		}
+	}
+}
+
+.list-table {
+	border-collapse: collapse;
+	margin: auto;
+	th, td {
+		padding: @table-cell-padding;
+		border: @small-border-width solid @base-border-color;
+	}
+	.list-table-header {
+		&.header-sortable {
+			cursor: pointer;
+		}
+	}
+	.list-table-cell {
+		&.cell-clickable {
+			cursor: pointer;
+		}
+	}
+	.user-removed-row {
+		color: @user-removed-color;
+	}
+	.user-banned-row {
+		color: @user-banned-color;
+	}
+	.list-table-footer {
+		border: @small-border-width solid @base-border-color;
+		#message-list-limit-dd {
+			width: 2.5rem;
+		}
+		td {
+			border: none;
+		}
+		.footer-right {
+			display: flex;
+			input {
+				margin-left: auto;
+			}
+		}
+	}
+}
+
+.info-table {
+	margin: auto;
+	border: @small-border-width solid @base-border-color;
+	display: flex;
+	flex-direction: column;
+	.info-table-row {
+		display: flex;
+		align-items: center;
+		margin: auto;
+		.avatar-cell {
+			width: 200px;
+			height: 200px;
+			padding: 0.2rem;
+			margin: 0.2rem;
+			border: @small-border-width solid @base-border-color;
+			img {
+				width: 100%;
+			}
+		}
+		.info-cell {
+			padding: @table-cell-padding;
+			.info-cell-area {
+				display: flex;
+				flex-direction: column;
+				text-align: left;
+				div {
+					padding: 0.55rem;
+					display: flex;
+					flex-direction: column;
+				}
+			}
+		}
+	}
+}
+
+#user-info-chart-area {
+	display: flex;
+	flex-direction: column;
+}
+
+.bold-text {
+	font-weight: bold;
+}
+
+.user-removed {
+	color: @user-removed-color;
+}
+
+.user-banned {
+	color:@user-banned-color;
+}
