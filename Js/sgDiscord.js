@@ -2,13 +2,14 @@ var baseUrl = window.location.href.split('/');
 baseUrl.length = 3;
 baseUrl = baseUrl.join('/');
 
-var counts = { messageList: 10 };
-var sortOrders = { messageList: "messageCount" };
-var isDesc = { messageList: true };
-var filterInput = { messageList: '' };
-var loadFuncs = { messageList: loadMessageList, userInfo: loadUserInfo };
+var counts = { messageList: 10, roleMesList: 10 };
+var sortOrders = { messageList: "messageCount", roleMesList: "messageCount" };
+var isDesc = { messageList: true, roleMesList: true };
+var filterInput = { messageList: '', roleMesList: '' };
+var loadFuncs = { messageList: loadMessageList, userInfo: loadUserInfo, roleMesList: loadRoleMessageList };
 var serverId = '229596738615377920';
 var placeholderAvatar = 'https://discordapp.com/assets/6debd47ed13483642cf09e832ed0bc1b.png';
+var genericErrorArea = undefined;
 
 function getJSON(url, callback, errorCallback, data) {
 	$.ajax({
@@ -20,6 +21,7 @@ function getJSON(url, callback, errorCallback, data) {
 	});
 };
 
+//#region Message List
 var messageListArea = undefined;
 var messageListTable = undefined;
 var messageListAreaLoading = undefined;
@@ -27,8 +29,8 @@ var messageListAreaLoading = undefined;
 function loadMessageList() {
 	messageListAreaLoading.innerHTML = "<span>Loading...</span>";
 	getJSON(("https://server.icebingo.io:25563/api/v1/discord/message-count/list/?count=" + counts['messageList'] +
-	"&serverId=" + serverId + "&sort=" + sortOrders['messageList'] + "&isDesc=" + isDesc['messageList']) + 
-	(filterInput['messageList'] ? ("&userFilter=" + filterInput['messageList']) : ''), 
+	"&serverId=" + serverId + "&start=0" + "&sort=" + sortOrders['messageList'] + "&isDesc=" + isDesc['messageList']) + 
+	(filterInput['messageList'] ? ("&userFilter=" + filterInput['messageList']) : '') + "&includeTotal=true", 
 	messageListSucccess, messageListFailure, '');
 }
 
@@ -40,11 +42,12 @@ function messageListSucccess(resp) {
 function messageListFailure(resp) {
 	var message = undefined;
 	if(!resp.responseJSON) {
-		message = "There was an error in handling an error."
+		message = "There was an error in handling an error.";
+	} else {
+		message = resp.responseJSON.Message;
 	}
-	message = resp.responseJSON.Message;
 	if(!message) {
-		message = "There was an error in handling an error."
+		message = "There was an error in handling an error.";
 	}
 	messageListAreaLoading.innerHTML = "<span>" + message + "</span>";
 }
@@ -67,7 +70,7 @@ function buildMessageList(data) {
 			<td class="list-table-cell">' + item.messageCount + '</td>\
 			<td class="list-table-cell">' + item.role + '</td>\
 		</tr>\
-		'
+		';
 	}
 	html+= '\
 	<tr class="list-table-footer">\
@@ -85,15 +88,19 @@ function buildMessageList(data) {
 			<input id="message-list-limit-filter" placeholder="Filter by name" value="' + filterInput['messageList'] + '"/>\
 			<button onclick="changeFilter(\'messageList\', \'message-list-limit-filter\')">Filter</button>\
 		</td>\
-	</div>';
+	</tr>';
 	return html;
 }
 
+//#endregion
+
+//#region User Info
 var userInfoArea = undefined;
 var userTableArea = undefined;
 var loadingUserInfo = false;
 
 function loadUserInfo(id) {
+	if(!id || id == -1) { return; }
 	if(loadingUserInfo) { return; }
 	loadingUserInfo = true;
 	messageListAreaLoading.innerHTML = "<span>Loading...</span>";
@@ -114,11 +121,12 @@ function userInfoSuccess(resp) {
 function userInfoFailure(resp) {
 	var message = undefined;
 	if(!resp.responseJSON) {
-		message = "There was an error in handling an error."
+		message = "There was an error in handling an error.";
+	} else {
+		message = resp.responseJSON.Message;
 	}
-	message = resp.responseJSON.Message;
 	if(!message) {
-		message = "There was an error in handling an error."
+		message = "There was an error in handling an error.";
 	}
 	messageListAreaLoading.innerHTML = "<span>" + message + "</span>";
 	loadingUserInfo = false;
@@ -175,6 +183,124 @@ function buildUserDensityChart(data) {
 	}
 }
 
+//#endregion
+
+//#region Role Message List
+var roleMessageListArea = undefined;
+var roleMessageListTable = undefined;
+var roleMessageListAreaLoading = undefined;
+var roleList = undefined;
+var seletedRoleId = '229598038438445056'; //Lydian Student role id
+
+function loadRoleList() {	
+	getJSON(("https://server.icebingo.io:25563/api/v1/discord/roles/?serverId=" + serverId), roleListSuccess, roleListFailure, '');
+}
+
+function roleListSuccess(resp) {
+	roleList = resp.results;
+	loadFuncs['roleMesList']();
+}
+
+function roleListFailure(resp) {
+	var message = undefined;
+	if(!resp.responseJSON) {
+		message = "There was an error in handling an error.";
+	} else {
+		message = resp.responseJSON.Message;
+	}
+	if(!message) {
+		message = "There was an error in handling an error.";
+	}
+	genericErrorArea.innerHTML = "<span>" + message + "</span>";
+	roleMessageListAreaLoading.innerHTML = "<span>Failed to load role list</span>";
+}
+
+function loadRoleMessageList() {
+	roleMessageListAreaLoading.innerHTML = "<span>Loading...</span>";
+	getJSON(("https://server.icebingo.io:25563/api/v1/discord/message-count/list/?count=" + counts['roleMesList'] +
+	"&serverId=" + serverId + "&start=0" + "&sort=" + sortOrders['roleMesList'] + "&isDesc=" + isDesc['roleMesList']) + 
+	(filterInput['roleMesList'] ? ("&userFilter=" + filterInput['roleMesList']) : '') + '&roleId=' + seletedRoleId + "&includeTotal=true", 
+	roleMesListSucccess, roleMesListFailure, '');
+}
+
+function roleMesListSucccess(resp) {
+	roleMessageListAreaLoading.innerHTML = "";
+	roleMessageListTable.innerHTML = buildMessageRoleList(resp.results);
+}
+
+function roleMesListFailure(resp) {
+	var message = undefined;
+	if(!resp.responseJSON) {
+		message = "There was an error in handling an error.";
+	} else {
+		message = resp.responseJSON.Message;
+	}
+	if(!message) {
+		message = "There was an error in handling an error.";
+	}
+	roleMessageListAreaLoading.innerHTML = "<span>" + message + "</span>";
+}
+
+function buildMessageRoleList(data) {
+	var html = '\
+	<tr class="list-table-header-row">\
+		<th class="list-table-header header-sortable" onclick="changeSort(\'roleMesList\', \'userName\')">User' + getSortArrow('roleMesList', 'userName') +'</th>\
+		<th class="list-table-header">Rank</th>\
+		<th class="list-table-header header-sortable" onclick="changeSort(\'roleMesList\', \'messageCount\')">Message Count' + getSortArrow('roleMesList', 'messageCount') +'</th>\
+		<th class="list-table-header">Roles</th>\
+	</tr>';
+	for(var i = 0; i < data.length; ++i) {
+		var item = data[i];
+		html += '\
+		<tr class="' + (item.isDeleted ? 'user-removed-row' : '') + (item.isBanned ? 'user-banned-row' : '') + '">\
+			<td class="list-table-cell cell-clickable"\
+			onclick="loadUserInfo(\'' + item.userId + '\')">' + item.userName + '</td>\
+			<td class="list-table-cell">' + item.rank + '</td>\
+			<td class="list-table-cell">' + item.messageCount + '</td>\
+			<td class="list-table-cell">' + item.role + '</td>\
+		</tr>\
+		';
+	}
+	html+= '\
+	<tr class="list-table-footer">\
+		<td class="footer-left">\
+			<span>Limit: </span>\
+			<select id="role-message-list-limit-dd" onchange="changeLimit(\'roleMesList\', \'role-message-list-limit-dd\')">\
+				<option value="10"' + (counts['roleMesList'] == 10 ? 'selected="selected"' : '' ) + '>10</option>\
+				<option value="25"' + (counts['roleMesList'] == 25 ? 'selected="selected"' : '' ) + '>25</option>\
+				<option value="50"' + (counts['roleMesList'] == 50 ? 'selected="selected"' : '' ) + '>50</option>\
+			</select>\
+			<select id="role-message-list-role-dd" onchange="changeSelectedRole()">';
+	
+	for(var i = 0; i < roleList.length; ++i) {
+		var item = roleList[i];
+		if(!item.isEveryone) {
+			html += '<option style="color:' + item.roleColor + ' ;" value="' + item.roleId + '" ' + (seletedRoleId == item.roleId ? 'selected="selected"' : '') + '>' + item.roleName + '</option>';
+		}
+	}
+			
+	html+=	'</select>\
+		</td>\
+		<td class="footer-mid"></td>\
+		<td class="footer-mid"></td>\
+		<td class="footer-right">\
+			<input id="role-message-list-limit-filter" placeholder="Filter by name" value="' + filterInput['roleMesList'] + '"/>\
+			<button onclick="changeFilter(\'roleMesList\', \'role-message-list-limit-filter\')">Filter</button>\
+		</td>\
+	</tr>';
+	return html;
+}
+
+function changeSelectedRole() {
+	var dd = document.getElementById('role-message-list-role-dd');
+	if(!dd) return;
+	var id = dd.options[dd.selectedIndex].value;
+	seletedRoleId = id;
+	loadFuncs['roleMesList']();
+}
+
+//#endregion
+
 function changeLimit(tableType, id) {
 	var dd = document.getElementById(id);
 	if(!dd) return;
@@ -188,7 +314,7 @@ function changeLimit(tableType, id) {
 function changeFilter(tableType, id) {
 	var input = document.getElementById(id);
 	if(!input) return;
-	filterInput['messageList'] = input.value;
+	filterInput[tableType] = input.value;
 	loadFuncs[tableType]();
 }
 
@@ -208,16 +334,21 @@ function getSortArrow(tableType, field) {
 		} else {
 			return ' ▲';
 		}
-	}	
+	}
 	return '';
 }
 
 window.onload = function () {
 	google.charts.load('current', {'packages':['corechart']});
+	genericErrorArea = document.getElementById('generic-error');
 	messageListArea = document.getElementById('message-table-area');
 	messageListAreaLoading = document.getElementById('message-table-loading');
 	messageListTable = document.getElementById('message-list-table');
 	userInfoArea = document.getElementById('user-info');
 	userTableArea = document.getElementById('user-info-table-area');
+	roleMessageListArea = document.getElementById('role-message-table-area');
+	roleMessageListTable = document.getElementById('role-message-list-table');
+	roleMessageListAreaLoading = document.getElementById('role-message-table-loading');
 	loadFuncs['messageList']();
+	loadRoleList();
 }
