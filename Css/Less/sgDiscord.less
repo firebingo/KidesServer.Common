@@ -39,14 +39,28 @@
 #role-message-list {
 	text-align: center;
 	h2 { margin-bottom: 0; }
-	#role-message-table-loading {
-		padding: 1rem 0;
-	}
 	#role-message-table-area {
 		display: flex;
 		flex-direction: column;
 		#role-message-table-loading {
+			padding: 1rem 0;
 			margin: auto;
+		}
+	}
+}
+
+#emoji-counts-list {
+	text-align: center;
+	h2 { margin-bottom: 0; }
+	#emoji-table-area {
+		display: flex;
+		flex-direction: column;
+		#emoji-table-loading {
+			padding: 1rem 0;
+			margin: auto;
+		}
+		.emoji-table-img {
+			width: 48px;
 		}
 	}
 }
@@ -87,6 +101,15 @@
 			input {
 				margin-left: auto;
 			}
+		}
+		.footer-container {
+			display: flex;
+		}
+		#emoji-list-name-filter {
+			width: 125px;
+		}
+		#emoji-list-id-filter {
+			width: 145px;
 		}
 	}
 }
@@ -129,6 +152,10 @@
 #user-info-chart-area {
 	display: flex;
 	flex-direction: column;
+}
+
+.hide-if-total {
+	display: none;
 }
 
 .bold-text {

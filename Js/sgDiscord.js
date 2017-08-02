@@ -2,11 +2,11 @@ var baseUrl = window.location.href.split('/');
 baseUrl.length = 3;
 baseUrl = baseUrl.join('/');
 
-var counts = { messageList: 10, roleMesList: 10 };
-var sortOrders = { messageList: "messageCount", roleMesList: "messageCount" };
-var isDesc = { messageList: true, roleMesList: true };
-var filterInput = { messageList: '', roleMesList: '' };
-var loadFuncs = { messageList: loadMessageList, userInfo: loadUserInfo, roleMesList: loadRoleMessageList };
+var counts = { messageList: 10, roleMesList: 10, emojiList: 10 };
+var sortOrders = { messageList: "messageCount", roleMesList: "messageCount", emojiList: "emojiCount" };
+var isDesc = { messageList: true, roleMesList: true, emojiList: true };
+var filterInput = { messageList: '', roleMesList: '', emojiList: '', emojiListId: '' };
+var loadFuncs = { messageList: loadMessageList, userInfo: loadUserInfo, roleMesList: loadRoleMessageList, emojiList: loadEmojiList, emojiListId: loadEmojiList };
 var serverId = '229596738615377920';
 var placeholderAvatar = 'https://discordapp.com/assets/6debd47ed13483642cf09e832ed0bc1b.png';
 var genericErrorArea = undefined;
@@ -143,6 +143,7 @@ function buildUserInfo(data) {
 					<div><span class="bold-text">Username:</span><span class="' + 
 					(data.isDeleted ? 'user-removed' : '') + (data.isBanned ? 'user-banned' : '') + '">' + data.userName + '</span></div>\
 					<div><span class="bold-text">Nickname:</span><span>' + (data.nickName ? data.nickName : 'None') + '</span></div>\
+					<div><span class="bold-text">UserID:</span><span>' + (data.userId) + '</span></div>\
 					<div><span class="bold-text">Joined At:</span><span>' + jDate.format('MMMM Do YYYY, h:mm a') + '</span></div>' +
 					(data.isBot ? '<div><span class="bold-text">Bot</span></div>' : '') +
 					'<div><span class="bold-text">Roles:</span><span>' + (data.role ? data.role : 'None') + '</span></div>\
@@ -301,6 +302,84 @@ function changeSelectedRole() {
 
 //#endregion
 
+//#region Emoji Count List
+var emojiListArea = null;
+var emojiListAreaLoading = null;
+var emojiListTable = null;
+
+function loadEmojiList() {
+	emojiListAreaLoading.innerHTML = "<span>Loading...</span>";
+	getJSON(("https://server.icebingo.io:25563/api/v1/discord/emoji-count/list/?count=" + counts['emojiList'] +
+	"&serverId=" + serverId + "&start=0" + "&sort=" + sortOrders['emojiList'] + "&isDesc=" + isDesc['emojiList']) + 
+	(filterInput['emojiList'] ? ("&nameFilter=" + filterInput['emojiList']) : '') + "&includeTotal=true&userFilterId=" + filterInput['emojiListId'], 
+	emojiListSucccess, emojiListFailure, '');
+}
+
+function emojiListSucccess(resp) {
+	emojiListAreaLoading.innerHTML = "";
+	emojiListTable.innerHTML = buildEmojiList(resp.results);
+}
+
+function emojiListFailure(resp) {
+	var message = undefined;
+	if(!resp.responseJSON) {
+		message = "There was an error in handling an error.";
+	} else {
+		message = resp.responseJSON.Message;
+	}
+	if(!message) {
+		message = "There was an error in handling an error.";
+	}
+	emojiListAreaLoading.innerHTML = "<span>" + message + "</span>";
+}
+
+function buildEmojiList(data) {
+	var html = '\
+	<tr class="list-table-header-row">\
+		<th class="list-table-header"></th>\
+		<th class="list-table-header header-sortable" onclick="changeSort(\'emojiList\', \'emojiName\')">Name' + getSortArrow('emojiList', 'emojiName') +'</th>\
+		<th class="list-table-header">Rank</th>\
+		<th class="list-table-header header-sortable" onclick="changeSort(\'emojiList\', \'emojiCount\')">Use Count' + getSortArrow('emojiList', 'emojiCount') +'</th>\
+	</tr>';
+	for(var i = 0; i < data.length; ++i) {
+		var item = data[i];
+		html += '\
+		<tr>\
+			<td class="list-table-cell"><img class="emoji-table-img ' + (item.emojiId == '' ? 'hide-if-total' : '') + '" src="' + item.emojiImg + '"/></td>\
+			<td class="list-table-cell"\>' + item.emojiName + '</td>\
+			<td class="list-table-cell">' + item.rank + '</td>\
+			<td class="list-table-cell">' + item.useCount + '</td>\
+		</tr>\
+		';
+	}
+	html+= '\
+	<tr class="list-table-footer">\
+		<td class="footer-left">\
+			<span>Limit: </span>\
+			<select id="emoji-list-limit-dd" onchange="changeLimit(\'emojiList\', \'emoji-list-limit-dd\')">\
+				<option value="10"' + (counts['emojiList'] == 10 ? 'selected="selected"' : '' ) + '>10</option>\
+				<option value="25"' + (counts['emojiList'] == 25 ? 'selected="selected"' : '' ) + '>25</option>\
+				<option value="50"' + (counts['emojiList'] == 50 ? 'selected="selected"' : '' ) + '>50</option>\
+			</select>\
+		</td>\
+		<td class="footer-mid">\
+			<div class="footer-container">\
+				<input id="emoji-list-name-filter" placeholder="Filter by name" value="' + filterInput['emojiList'] + '"/>\
+				<button onclick="changeFilter(\'emojiList\', \'emoji-list-name-filter\')">Filter</button>\
+			</div>\
+		</td>\
+		<td class="footer-mid"></td>\
+		<td class="footer-right">\
+			<div class="footer-container">\
+				<input id="emoji-list-id-filter" placeholder="Filter by UserID" value="' + filterInput['emojiListId'] + '"/>\
+				<button onclick="changeFilter(\'emojiListId\', \'emoji-list-id-filter\')">Filter</button>\
+			</div>\
+		</td>\
+	</tr>';
+	return html;
+}
+//#endregion
+
 function changeLimit(tableType, id) {
 	var dd = document.getElementById(id);
 	if(!dd) return;
@@ -349,6 +428,10 @@ window.onload = function () {
 	roleMessageListArea = document.getElementById('role-message-table-area');
 	roleMessageListTable = document.getElementById('role-message-list-table');
 	roleMessageListAreaLoading = document.getElementById('role-message-table-loading');
+	emojiListArea = document.getElementById('emoji-table-area');
+	emojiListAreaLoading = document.getElementById('emoji-table-loading');
+	emojiListTable = document.getElementById('emoji-list-table');
 	loadFuncs['messageList']();
+	loadFuncs['emojiList']();
 	loadRoleList();
 }
