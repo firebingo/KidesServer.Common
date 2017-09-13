@@ -30,7 +30,7 @@ function loadMessageList() {
 	messageListAreaLoading.innerHTML = "<span>Loading...</span>";
 	getJSON(("https://server.icebingo.io:25563/api/v1/discord/message-count/list/?count=" + counts['messageList'] +
 	"&serverId=" + serverId + "&start=0" + "&sort=" + sortOrders['messageList'] + "&isDesc=" + isDesc['messageList']) + 
-	(filterInput['messageList'] ? ("&userFilter=" + filterInput['messageList']) : '') + "&includeTotal=true", 
+	(filterInput['messageList'] ? ("&userFilter=" + encodeURIComponent(filterInput['messageList'])) : '') + "&includeTotal=true", 
 	messageListSucccess, messageListFailure, '');
 }
 
@@ -63,7 +63,7 @@ function buildMessageList(data) {
 	for(var i = 0; i < data.length; ++i) {
 		var item = data[i];
 		html += '\
-		<tr class="' + (item.isDeleted ? 'user-removed-row' : '') + (item.isBanned ? 'user-banned-row' : '') + '">\
+		<tr class="' + (item.isDeleted ? 'user-removed-row ' : '') + (item.isBanned ? 'user-banned-row' : '') + '">\
 			<td class="list-table-cell cell-clickable"\
 			onclick="loadUserInfo(\'' + item.userId + '\')">' + item.userName + '</td>\
 			<td class="list-table-cell">' + item.rank + '</td>\
@@ -220,7 +220,7 @@ function loadRoleMessageList() {
 	roleMessageListAreaLoading.innerHTML = "<span>Loading...</span>";
 	getJSON(("https://server.icebingo.io:25563/api/v1/discord/message-count/list/?count=" + counts['roleMesList'] +
 	"&serverId=" + serverId + "&start=0" + "&sort=" + sortOrders['roleMesList'] + "&isDesc=" + isDesc['roleMesList']) + 
-	(filterInput['roleMesList'] ? ("&userFilter=" + filterInput['roleMesList']) : '') + '&roleId=' + seletedRoleId + "&includeTotal=true", 
+	(filterInput['roleMesList'] ? ("&userFilter=" + encodeURIComponent(filterInput['roleMesList'])) : '') + '&roleId=' + seletedRoleId + "&includeTotal=true", 
 	roleMesListSucccess, roleMesListFailure, '');
 }
 
