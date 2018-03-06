@@ -1,12 +1,12 @@
-var baseUrl = window.location.href.split('/');
-baseUrl.length = 3;
-baseUrl = baseUrl.join('/');
-
-var counts = { messageList: 10, roleMesList: 10, emojiList: 10 };
-var sortOrders = { messageList: "messageCount", roleMesList: "messageCount", emojiList: "emojiCount" };
-var isDesc = { messageList: true, roleMesList: true, emojiList: true };
-var filterInput = { messageList: '', roleMesList: '', emojiList: '', emojiListId: '' };
-var loadFuncs = { messageList: loadMessageList, userInfo: loadUserInfo, roleMesList: loadRoleMessageList, emojiList: loadEmojiList, emojiListId: loadEmojiList };
+var counts = { messageList: 10, roleMesList: 10, emojiList: 10, wordList: 10 };
+var sortOrders = { messageList: "messageCount", roleMesList: "messageCount", emojiList: "emojiCount", wordList: 'count' };
+var isDesc = { messageList: true, roleMesList: true, emojiList: true, wordList: true };
+var filterInput = { messageList: '', roleMesList: '', emojiList: '', emojiListId: '', wordList: '', wordListId: '', wordListFloor: '', wordListEnglish: false };
+var loadFuncs = { messageList: loadMessageList, userInfo: loadUserInfo, 
+				  roleMesList: loadRoleMessageList, emojiList: loadEmojiList, 
+				  emojiListId: loadEmojiList, wordList: loadWordList,
+				  wordListId: loadWordList, wordListFloor: loadWordList,
+				  wordListEnglish: loadWordList};
 var serverId = '229596738615377920';
 var placeholderAvatar = 'https://discordapp.com/assets/6debd47ed13483642cf09e832ed0bc1b.png';
 var genericErrorArea = undefined;
@@ -345,12 +345,12 @@ function buildEmojiList(data) {
 		var item = data[i];
 		html += '\
 		<tr>\
-			<td class="list-table-cell"><img class="emoji-table-img ' + (item.emojiId == '' ? 'hide-if-total' : '') + '" src="' + item.emojiImg + '"/></td>\
+			<td class="list-table-cell"><img id="emoji-' + item.emojiId + '" onerror="emojiOnError(\'' + item.emojiId + '\')" class="emoji-table-img ' 
+			+ (item.emojiId == '' ? 'hide-if-total' : '') + '" src="' + item.emojiImg.replace('.png', '.gif') + '"/></td>\
 			<td class="list-table-cell"\>' + item.emojiName + '</td>\
 			<td class="list-table-cell">' + item.rank + '</td>\
 			<td class="list-table-cell">' + item.useCount + '</td>\
-		</tr>\
-		';
+		</tr>';
 	}
 	html+= '\
 	<tr class="list-table-footer">\
@@ -378,6 +378,113 @@ function buildEmojiList(data) {
 	</tr>';
 	return html;
 }
+
+function emojiOnError(id)
+{
+	var imageEl = document.getElementById('emoji-' + id);
+	if(imageEl) {
+		if(imageEl.src.indexOf('.gif') !== -1) {
+			imageEl.src = imageEl.src.replace('.gif', '.png');
+		}
+	}
+}
+//#endregion
+
+//#region Word Count List
+var wordListArea = null;
+var wordListAreaLoading = null;
+var wordListTable = null;
+
+function loadWordList() {
+	if(wordListLoad && wordListLoad.parentNode) {
+		wordListLoad.parentNode.removeChild(wordListLoad);
+	}
+	wordListLoad = undefined;
+	wordListAreaLoading.innerHTML = "<span>Loading...</span>";
+	getJSON(("https://server.icebingo.io:25563/api/v1/discord/word-count/list/?count=" + counts['wordList'] +
+	"&serverId=" + serverId + "&start=0" + "&sort=" + sortOrders['wordList'] + "&isDesc=" + isDesc['wordList']) + 
+	(filterInput['wordList'] ? ("&wordFilter=" + encodeURIComponent(filterInput['wordList'])) : '') + 
+	(filterInput['wordListFloor'] ? ("&lengthFloor=" + filterInput['wordListFloor']) : '') +
+	"&includeTotal=true&userFilterId=" + filterInput['wordListId'] + "&englishOnly=" + filterInput['wordListEnglish'], 
+	wordListSucccess, wordListFailure, '');
+}
+
+function wordListSucccess(resp) {
+	wordListAreaLoading.innerHTML = "";
+	wordListTable.innerHTML = buildWordList(resp.results);
+}
+
+function buildWordList(data) {
+	var html = '\
+	<tr class="list-table-header-row">\
+		<th class="list-table-header header-sortable" onclick="changeSort(\'wordList\', \'word\')">Name' + getSortArrow('wordList', 'word') +'</th>\
+		<th class="list-table-header">Rank</th>\
+		<th class="list-table-header header-sortable" onclick="changeSort(\'wordList\', \'count\')">Use Count' + getSortArrow('wordList', 'count') +'</th>\
+	</tr>';
+	for(var i = 0; i < data.length; ++i) {
+		var item = data[i];
+		html += '\
+		<tr>\
+			<td class="list-table-cell"\>' + item.word + '</td>\
+			<td class="list-table-cell">' + item.rank + '</td>\
+			<td class="list-table-cell">' + item.useCount + '</td>\
+		</tr>\
+		';
+	}
+	html+= '\
+	<tr class="list-table-footer first-row">\
+		<td class="footer-left">\
+			<span>Limit: </span>\
+			<select id="word-list-limit-dd" onchange="changeLimit(\'wordList\', \'word-list-limit-dd\')">\
+				<option value="10"' + (counts['wordList'] == 10 ? 'selected="selected"' : '' ) + '>10</option>\
+				<option value="25"' + (counts['wordList'] == 25 ? 'selected="selected"' : '' ) + '>25</option>\
+				<option value="50"' + (counts['wordList'] == 50 ? 'selected="selected"' : '' ) + '>50</option>\
+			</select>\
+			<input id="word-list-english-filter" type="checkbox" value="' + 
+			filterInput['wordList'] + '" onclick="changeFilterCheck(\'wordListEnglish\', \'word-list-english-filter\')" ' + 
+			(filterInput['wordListEnglish'] == true ? ' checked' : '') + '/>\
+			<span>English Only</span>\
+		</td>\
+		<td class="footer-mid">\
+		</td>\
+		<td class="footer-right">\
+			<div class="footer-container">\
+				<input id="word-list-name-filter" placeholder="Filter by word" value="' + filterInput['wordList'] + '"/>\
+				<button onclick="changeFilter(\'wordList\', \'word-list-name-filter\')">Filter</button>\
+			</div>\
+		</td>\
+	</tr>\
+	<tr class="list-table-footer second-row">\
+		<td class="footer-left">\
+			<div class="footer-container">\
+				<input id="word-list-floor-filter" placeholder="Word Min Length" value="' + filterInput['wordListFloor'] + '"/>\
+				<button onclick="changeFilter(\'wordListFloor\', \'word-list-floor-filter\')">Filter</button>\
+			</div>\
+		</td>\
+		<td class="footer-mid">\
+		</td>\
+		<td class="footer-right">\
+			<div class="footer-container">\
+				<input id="word-list-id-filter" placeholder="Filter by UserID" value="' + filterInput['wordListId'] + '"/>\
+				<button onclick="changeFilter(\'wordListId\', \'word-list-id-filter\')">Filter</button>\
+			</div>\
+		</td>\
+	</tr>';
+	return html;
+}
+
+function wordListFailure(resp) {
+	var message = undefined;
+	if(!resp.responseJSON) {
+		message = "There was an error in handling an error.";
+	} else {
+		message = resp.responseJSON.Message;
+	}
+	if(!message) {
+		message = "There was an error in handling an error.";
+	}
+	wordListAreaLoading.innerHTML = "<span>" + message + "</span>";
+}
 //#endregion
 
 function changeLimit(tableType, id) {
@@ -394,6 +501,13 @@ function changeFilter(tableType, id) {
 	var input = document.getElementById(id);
 	if(!input) return;
 	filterInput[tableType] = input.value;
+	loadFuncs[tableType]();
+}
+
+function changeFilterCheck(tableType, id) {
+	var input = document.getElementById(id);
+	if(!input) return;
+	filterInput[tableType] = input.checked;
 	loadFuncs[tableType]();
 }
 
@@ -431,6 +545,10 @@ window.onload = function () {
 	emojiListArea = document.getElementById('emoji-table-area');
 	emojiListAreaLoading = document.getElementById('emoji-table-loading');
 	emojiListTable = document.getElementById('emoji-list-table');
+	wordListArea = document.getElementById('word-table-area');
+	wordListAreaLoading = document.getElementById('word-table-loading');
+	wordListTable = document.getElementById('word-list-table');
+	wordListLoad = document.getElementById('word-counts-load');
 	loadFuncs['messageList']();
 	loadFuncs['emojiList']();
 	loadRoleList();

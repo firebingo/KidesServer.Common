@@ -50,7 +50,6 @@ function buildSongList() {
 							<span>Roman: ' + songList[j].Roman + '</span>\
 							<span>English: ' + songList[j].English + '</span>\
 							<span>Japanese: ' + songList[j].Japanese + '</span>\
-							<span>Kana: ' + songList[j].Hiragana + '</span>\
 							<span>Artist: ' + songList[j].Artist + '</span>\
 							<span>URL: ' + baseSongUrl + '/Music/' + songList[j].Directory + '/' + songList[j].Url + '</span>\
 						</div>\
@@ -63,6 +62,7 @@ function buildSongList() {
 		songListArea.appendChild(element);
 	}
 };
+//<span>Kana: ' + songList[j].Hiragana + '</span>\
 
 buildSongStats = function() {
 	songStatArea = songStatArea ? songStatArea : document.getElementById("song-stats-area");

@@ -4,113 +4,73 @@
 @user-removed-color: rgba(255,255,255,.25);
 @user-banned-color: #AF0000;
 
-#discord-widget {
-	text-align: center;
-}
+#discord-widget { text-align: center; }
 
-#generic-error {
-	text-align: center;
-}
+#generic-error { text-align: center; }
 
-#message-list {
-	text-align: center;
-	h2 { margin-bottom: 0; }
-	#message-table-loading {
-		padding: 1rem 0;
-	}
-	#message-table-area {
-		display: flex;
-		flex-direction: column;
-		#message-table-loading {
-			margin: auto;
-		}
-	}
-}
+#message-table-area { }
 
 #user-info {
 	text-align: center;
 	flex-direction: column;
 	padding: 1rem 0;
-	#user-info-table-area {
-		display: flex;
+	#user-info-table-area { display: flex; }
+}
+
+#role-message-table-area {}
+
+#emoji-table-area {
+	.emoji-table-img { width: 48px; }
+}
+
+#word-counts-list {
+	.list-table-footer {
+		#word-list-floor-filter { max-width: 155px; }
+		#word-list-english-filter { margin-left: 8px; }
 	}
 }
 
-#role-message-list {
+.list-region {
 	text-align: center;
 	h2 { margin-bottom: 0; }
-	#role-message-table-area {
-		display: flex;
-		flex-direction: column;
-		#role-message-table-loading {
-			padding: 1rem 0;
-			margin: auto;
-		}
-	}
 }
 
-#emoji-counts-list {
-	text-align: center;
-	h2 { margin-bottom: 0; }
-	#emoji-table-area {
-		display: flex;
-		flex-direction: column;
-		#emoji-table-loading {
-			padding: 1rem 0;
-			margin: auto;
-		}
-		.emoji-table-img {
-			width: 48px;
-		}
-	}
+.table-area {
+	display: flex;
+	flex-direction: column;
+}
+
+.table-loading {
+	padding: 1rem 0;
+	margin: auto;
 }
 
 .list-table {
 	border-collapse: collapse;
 	margin: auto;
-	th, td {
-		padding: @table-cell-padding;
-		border: @small-border-width solid @base-border-color;
-	}
+	th, td { padding: @table-cell-padding; border: @small-border-width solid @base-border-color; }
 	.list-table-header {
-		&.header-sortable {
-			cursor: pointer;
-		}
+		&.header-sortable { cursor: pointer; }
 	}
 	.list-table-cell {
-		&.cell-clickable {
-			cursor: pointer;
-		}
+		&.cell-clickable { cursor: pointer; }
 	}
-	.user-removed-row {
-		color: @user-removed-color;
-	}
-	.user-banned-row {
-		color: @user-banned-color;
-	}
+	.user-removed-row { color: @user-removed-color; }
+	.user-banned-row { color: @user-banned-color; }
 	.list-table-footer {
 		border: @small-border-width solid @base-border-color;
-		#message-list-limit-dd {
-			width: 2.5rem;
-		}
-		td {
-			border: none;
-		}
+		#message-list-limit-dd { width: 2.5rem; }
+		td { border: none; }
 		.footer-right {
 			display: flex;
-			input {
-				margin-left: auto;
-			}
+			input { margin-left: auto; }
 		}
-		.footer-container {
-			display: flex;
-		}
-		#emoji-list-name-filter {
-			width: 125px;
-		}
-		#emoji-list-id-filter {
-			width: 145px;
-		}
+		.footer-container { display: flex; }
+		#emoji-list-name-filter { width: 125px; }
+		#emoji-list-id-filter { width: 145px; }
+		input[type='checkbox'] { margin-right: 0; }
+		&.first-row { border-bottom: none; }
+		&.second-row { border-top: none; }
 	}
 }
 
@@ -129,9 +89,7 @@
 			padding: 0.2rem;
 			margin: 0.2rem;
 			border: @small-border-width solid @base-border-color;
-			img {
-				width: 100%;
-			}
+			img { width: 100%; }
 		}
 		.info-cell {
 			padding: @table-cell-padding;
