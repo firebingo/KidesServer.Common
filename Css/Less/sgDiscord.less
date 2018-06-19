@@ -8,13 +8,19 @@
 
 #generic-error { text-align: center; }
 
+#loading-parent { font-size: 30px; }
+
+#message-user-info { margin: auto; max-width: 2100px; display: flex; align-items: center; justify-content: space-around; flex-wrap: wrap; }
+
 #message-table-area { }
 
 #user-info {
+	margin: auto;
 	text-align: center;
 	flex-direction: column;
 	padding: 1rem 0;
 	#user-info-table-area { display: flex; }
+	max-width: 775px;
 }
 
 #role-message-table-area {}
@@ -29,6 +35,8 @@
 		#word-list-english-filter { margin-left: 8px; }
 	}
 }
+
+#server-stats { display: flex; margin: auto; align-items: center; justify-content: space-around; flex-wrap: wrap; }
 
 .list-region {
 	text-align: center;
@@ -106,6 +114,8 @@
 		}
 	}
 }
+
+.stat-chart { text-align: center; border-collapse: collapse; margin: 1rem auto; border: @small-border-width solid @base-border-color; width: 40%; height: 400px; min-width: 720px; }
 
 #user-info-chart-area {
 	display: flex;

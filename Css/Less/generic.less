@@ -4,6 +4,7 @@
 @base-font-color: rgba(255,255,255,.7);
 @base-border-color: rgba(255,255,255,.2);
 @base-link-color: #0096cf;
+@fade-in-time: 0.5s;
 
 html {
 	font-size: @base-font-size;
@@ -24,3 +25,10 @@ html {
 		}
 	}
 }
+
+.fade-in {
+	opacity: 0;
+	transition: opacity @fade-in-time;
+}
+
+.centered { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; }

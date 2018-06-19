@@ -9,6 +9,7 @@ var songListArea = document.getElementById("song-list-area");
 var songCountArea = document.getElementById("song-count-area");
 var songStatArea = document.getElementById("song-stats-area");
 var songStatPlaceholder = document.getElementById("song-stats-placeholder");
+var songInfoArea = document.getElementById("song-info-area");
 
 function getJSON(url, callback, errorCallback, data) {
 	$.ajax({
@@ -23,6 +24,7 @@ function getJSON(url, callback, errorCallback, data) {
 function buildSongList() {
 	songCountArea = songCountArea ? songCountArea : document.getElementById("song-count-area");
 	songListArea = songListArea ? songListArea : document.getElementById("song-list-area");
+	songInfoArea = songInfoArea ? songInfoArea : document.getElementById("song-info-area");
 	if(songCountArea) {
 		var element = document.createElement('div');
 		element.id = 'song-counts';
@@ -60,6 +62,7 @@ function buildSongList() {
 		}
 		element.innerHTML = songListTemplate;
 		songListArea.appendChild(element);
+		$(songInfoArea).css('opacity', 1);
 	}
 };
 //<span>Kana: ' + songList[j].Hiragana + '</span>\
@@ -86,6 +89,7 @@ buildSongStats = function() {
 		element.innerHTML = songStatTemplate;
 		songStatPlaceholder.innerHTML = "";
 		songStatArea.appendChild(element);
+		$(songStatArea).css('opacity', 1);
 	}
 };
 

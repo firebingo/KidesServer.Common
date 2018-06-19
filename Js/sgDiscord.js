@@ -6,10 +6,12 @@ var loadFuncs = { messageList: loadMessageList, userInfo: loadUserInfo,
 				  roleMesList: loadRoleMessageList, emojiList: loadEmojiList, 
 				  emojiListId: loadEmojiList, wordList: loadWordList,
 				  wordListId: loadWordList, wordListFloor: loadWordList,
-				  wordListEnglish: loadWordList};
+				  wordListEnglish: loadWordList, stats: loadStats};
 var serverId = '229596738615377920';
 var placeholderAvatar = 'https://discordapp.com/assets/6debd47ed13483642cf09e832ed0bc1b.png';
 var genericErrorArea = undefined;
+var loadProgress = 0;
+var endLoadCount = 5;
 
 function getJSON(url, callback, errorCallback, data) {
 	$.ajax({
@@ -37,6 +39,7 @@ function loadMessageList() {
 function messageListSucccess(resp) {
 	messageListAreaLoading.innerHTML = "";
 	messageListTable.innerHTML = buildMessageList(resp.results);
+	loadProgress++;
 }
 
 function messageListFailure(resp) {
@@ -50,6 +53,7 @@ function messageListFailure(resp) {
 		message = "There was an error in handling an error.";
 	}
 	messageListAreaLoading.innerHTML = "<span>" + message + "</span>";
+	loadProgress++;
 }
 
 function buildMessageList(data) {
@@ -104,8 +108,8 @@ function loadUserInfo(id) {
 	if(loadingUserInfo) { return; }
 	loadingUserInfo = true;
 	messageListAreaLoading.innerHTML = "<span>Loading...</span>";
-	userInfoArea.style.display = "none";
-	userTableArea.innerHTML = "";
+	//userInfoArea.style.display = "none";
+	//userTableArea.innerHTML = "";
 	getJSON(("https://server.icebingo.io:25563/api/v1/discord/user-info/?userId=" + id + 
 	'&serverId=' + serverId), userInfoSuccess, userInfoFailure, '');
 }
@@ -115,6 +119,7 @@ function userInfoSuccess(resp) {
 	buildUserDensityChart(resp.messageDensity);
 	messageListAreaLoading.innerHTML = "";
 	userInfoArea.style.display = "flex";
+	setTimeout(function() { userInfoArea.style.opacity = "1"; });
 	loadingUserInfo = false;
 }
 
@@ -135,7 +140,7 @@ function userInfoFailure(resp) {
 function buildUserInfo(data) {
 	var jDate = moment(data.joinedDate);
 	var html = '\
-	<div class="info-table" style="width: ' + messageListTable.offsetWidth + '">\
+	<div class="info-table" style="width: ' + 900 + ';">\
 		<div class="info-table-row">\
 			<div class="avatar-cell"><img src="' + (data.avatarUrl ? data.avatarUrl : placeholderAvatar) + '"/></div>\
 			<div class="info-cell">\
@@ -169,7 +174,7 @@ function buildUserDensityChart(data) {
 	
 	var options = {
 		'title': 'Message Counts by Month',
-		width: messageListTable.offsetWidth - 20,
+		width: 880,
 		vAxis: { format: 'decimal', gridlines: {color: '#818181'}, baselineColor: '#818181' },
 		hAxis: { textPosition: 'none' },
 		legend: 'none',
@@ -214,6 +219,7 @@ function roleListFailure(resp) {
 	}
 	genericErrorArea.innerHTML = "<span>" + message + "</span>";
 	roleMessageListAreaLoading.innerHTML = "<span>Failed to load role list</span>";
+	loadProgress++;
 }
 
 function loadRoleMessageList() {
@@ -227,6 +233,7 @@ function loadRoleMessageList() {
 function roleMesListSucccess(resp) {
 	roleMessageListAreaLoading.innerHTML = "";
 	roleMessageListTable.innerHTML = buildMessageRoleList(resp.results);
+	loadProgress++;
 }
 
 function roleMesListFailure(resp) {
@@ -240,6 +247,7 @@ function roleMesListFailure(resp) {
 		message = "There was an error in handling an error.";
 	}
 	roleMessageListAreaLoading.innerHTML = "<span>" + message + "</span>";
+	loadProgress++;
 }
 
 function buildMessageRoleList(data) {
@@ -318,6 +326,7 @@ function loadEmojiList() {
 function emojiListSucccess(resp) {
 	emojiListAreaLoading.innerHTML = "";
 	emojiListTable.innerHTML = buildEmojiList(resp.results);
+	loadProgress++;
 }
 
 function emojiListFailure(resp) {
@@ -331,6 +340,7 @@ function emojiListFailure(resp) {
 		message = "There was an error in handling an error.";
 	}
 	emojiListAreaLoading.innerHTML = "<span>" + message + "</span>";
+	loadProgress++;
 }
 
 function buildEmojiList(data) {
@@ -487,6 +497,96 @@ function wordListFailure(resp) {
 }
 //#endregion
 
+//#region stats
+var serverStats = undefined;
+var statsUserCount = undefined;
+var statsUniqueUserCount = undefined;
+
+function loadStats() {
+	var stDate = new Date();
+	stDate.setDate(stDate.getDate()-15);
+	document.getElementById("unique-user-stat-loading").innerHTML = "<span>Loading...</span>";
+	document.getElementById("user-count-stat-loading").innerHTML = "<span>Loading...</span>";
+	getJSON(("https://server.icebingo.io:25563/api/v1/discord/stats/?serverId=" + serverId +
+	"&type=0&startDate=" + stDate.toISOString()), 
+	statUserCountSuccess, statUserCountFailure, '');
+	getJSON(("https://server.icebingo.io:25563/api/v1/discord/stats/?serverId=" + serverId +
+	"&type=1&startDate=" + stDate.toISOString()), 
+	statUniqueUserSuccess, statUniqueUserFailure, '');
+}
+
+function statUserCountSuccess(resp) {
+	document.getElementById('user-count-stat-chart').innerHTML = "";
+	buildStatValueChart(resp.results, 'user-count-stat-chart', 'User Count');
+	document.getElementById("user-count-stat-loading").innerHTML = "";
+	loadProgress++;
+}
+
+function statUserCountFailure(resp) {
+	var message = undefined;
+	if(!resp.responseJSON) {
+		message = "There was an error in handling an error.";
+	} else {
+		message = resp.responseJSON.Message;
+	}
+	if(!message) {
+		message = "There was an error in handling an error.";
+	}
+	document.getElementById("user-count-stat-loading").innerHTML = "<span>" + message + "</span>";
+	loadProgress++;
+}
+
+function statUniqueUserSuccess(resp) {
+	document.getElementById('unique-user-stat-chart').innerHTML = "";
+	buildStatValueChart(resp.results, 'unique-user-stat-chart', 'Unique Users');
+	document.getElementById("unique-user-stat-loading").innerHTML = "";
+	loadProgress++;
+}
+
+function statUniqueUserFailure(resp) {
+	var message = undefined;
+	if(!resp.responseJSON) {
+		message = "There was an error in handling an error.";
+	} else {
+		message = resp.responseJSON.Message;
+	}
+	if(!message) {
+		message = "There was an error in handling an error.";
+	}
+	document.getElementById("unique-user-stat-loading").innerHTML = "<span>" + message + "</span>";
+	loadProgress++;
+}
+
+function buildStatValueChart(data, elementId, valueTitle) {
+	var chartData = new google.visualization.DataTable();
+	chartData.addColumn('string', 'Date');
+	chartData.addColumn('number', valueTitle);
+	var rowsToAdd = [];
+	for(var i = 0; i < data.length; ++i) {
+		var date = moment.utc(data[i].date).format('MMM, DD');
+		rowsToAdd.push([date, data[i].statValue]);
+	}
+	chartData.addRows(rowsToAdd);
+	
+	var options = {
+		title: '',
+		width: statsUniqueUserCount.offsetWidth-10,
+		height: 325,
+		vAxis: { format: 'decimal', gridlines: {color: '#818181'}, baselineColor: '#818181' },
+		hAxis: { },
+		legend: 'none',
+		backgroundColor: '#393939',
+		colors: ['#738bd7']
+	};
+	var chart = new google.visualization.LineChart(document.getElementById(elementId));
+	chart.draw(chartData, options);
+	var textBlocks = $('#' + elementId).find("text");
+	for(var i = 0; i < textBlocks.length; ++i) {
+		textBlocks.attr("fill", 'rgba(255,255,255,.7)');
+	}
+}
+//#endregion
+
 function changeLimit(tableType, id) {
 	var dd = document.getElementById(id);
 	if(!dd) return;
@@ -533,6 +633,7 @@ function getSortArrow(tableType, field) {
 
 window.onload = function () {
 	google.charts.load('current', {'packages':['corechart']});
+	google.charts.setOnLoadCallback(onGoogleLoaded);
 	genericErrorArea = document.getElementById('generic-error');
 	messageListArea = document.getElementById('message-table-area');
 	messageListAreaLoading = document.getElementById('message-table-loading');
@@ -549,7 +650,24 @@ window.onload = function () {
 	wordListAreaLoading = document.getElementById('word-table-loading');
 	wordListTable = document.getElementById('word-list-table');
 	wordListLoad = document.getElementById('word-counts-load');
+	serverStats = document.getElementById('server-stats');
+	statsUserCount = document.getElementById('user-count-stat');
+	statsUniqueUserCount = document.getElementById('unique-user-stat');
 	loadFuncs['messageList']();
 	loadFuncs['emojiList']();
 	loadRoleList();
+	setTimeout(checkLoaded, 250);
+	
+	function onGoogleLoaded() {
+		loadFuncs['stats']();
+	}
+	
+	function checkLoaded() {
+		if(loadProgress === endLoadCount) {
+			document.getElementById('fade-parent').style.opacity = "1";
+			document.getElementById('loading-parent').style.display = "none";
+		} else {
+			setTimeout(checkLoaded, 250);
+		}
+	}
 }
