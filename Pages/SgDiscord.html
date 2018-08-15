@@ -1,4 +1,10 @@
+<!DOCTYPE html>
 <html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="theme-color" content="#393939"/>
+		<meta name="viewport" content="width=device-width, initial-scale=0.4"/>
+	</head>
 	<link rel="stylesheet" type="text/css" href="../Css/generic.min.css">
 	<link rel="stylesheet" type="text/css" href="../Css/sgDiscord.min.css">
 	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -37,12 +43,20 @@
 			</div>
 			<div id="server-stats">
 				<div id="user-count-stat" class="stat-chart">
-					<h2>User Count</h2>
+					<div class="stat-table-header">
+						<button id="stat-u-cnt-down" onclick="changeStatDateGroup('statUCnt', false)">▼</button>
+						<h2>User Count</h2>
+						<button id="stat-u-cnt-up" onclick="changeStatDateGroup('statUCnt', true)">▲</button>
+					</div>
 					<span id="user-count-stat-loading" class="table-loading">Loading...</span>
 					<div id="user-count-stat-chart"></div>
 				</div>
 				<div id="unique-user-stat" class="stat-chart">
-					<h2>Active User Count</h2>
+					<div class="stat-table-header">
+						<button id="stat-un-u-down" onclick="changeStatDateGroup('statUnU', false)">▼</button>
+						<h2>Active User Count</h2>
+						<button id="stat-un-u-up" onclick="changeStatDateGroup('statUnU', true)">▲</button>
+					</div>
 					<span id="unique-user-stat-loading" class="table-loading">Loading...</span>
 					<div id="unique-user-stat-chart"></div>
 				</div>

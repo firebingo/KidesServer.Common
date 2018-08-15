@@ -1,5 +1,5 @@
 var counts = { messageList: 10, roleMesList: 10, emojiList: 10, wordList: 10 };
-var sortOrders = { messageList: "messageCount", roleMesList: "messageCount", emojiList: "emojiCount", wordList: 'count' };
+var sortOrders = { messageList: "messageCount", roleMesList: "messageCount", emojiList: "emojiCount", wordList: 'count', statUCnt: 1, statUnU: 1 };
 var isDesc = { messageList: true, roleMesList: true, emojiList: true, wordList: true };
 var filterInput = { messageList: '', roleMesList: '', emojiList: '', emojiListId: '', wordList: '', wordListId: '', wordListFloor: '', wordListEnglish: false };
 var loadFuncs = { messageList: loadMessageList, userInfo: loadUserInfo, 
@@ -503,22 +503,59 @@ var statsUserCount = undefined;
 var statsUniqueUserCount = undefined;
 
 function loadStats() {
+	loadUserCountStats();
+	loadUniqueUserStats();
+}
+
+function changeStatDateGroup(type, increase) {
+	if(increase) {
+		if(sortOrders[type] < 4) {
+			sortOrders[type]++;
+		} else {
+			return;
+		}
+	} else {
+		if(sortOrders[type] > 0) {
+			sortOrders[type]--;
+		} else {
+			return;
+		}
+	}
+	
+	if(type === 'statUCnt') {
+		document.getElementById('stat-u-cnt-down').disabled = false;
+		document.getElementById('stat-u-cnt-up').disabled = false;
+		if(sortOrders[type] === 0) {
+			document.getElementById('stat-u-cnt-down').disabled = true;
+		} else if(sortOrders[type] === 4) {
+			document.getElementById('stat-u-cnt-up').disabled = true;
+		}
+		loadUserCountStats();
+	} else if(type === 'statUnU') {
+		document.getElementById('stat-un-u-down').disabled = false;
+		document.getElementById('stat-un-u-up').disabled = false;
+		if(sortOrders[type] === 0) {
+			document.getElementById('stat-un-u-down').disabled = true;
+		} else if(sortOrders[type] === 4) {
+			document.getElementById('stat-un-u-up').disabled = true;
+		}
+		loadUniqueUserStats();
+	}
+}
+
+function loadUserCountStats() {
 	var stDate = new Date();
-	stDate.setDate(stDate.getDate()-15);
-	document.getElementById("unique-user-stat-loading").innerHTML = "<span>Loading...</span>";
+	stDate = setDateForStat(stDate, 'statUCnt');
 	document.getElementById("user-count-stat-loading").innerHTML = "<span>Loading...</span>";
 	getJSON(("https://server.icebingo.io:25563/api/v1/discord/stats/?serverId=" + serverId +
-	"&type=0&startDate=" + stDate.toISOString()), 
+	"&type=0&startDate=" + stDate.toISOString()+ "&dateGroup=" + sortOrders['statUCnt']), 
 	statUserCountSuccess, statUserCountFailure, '');
-	getJSON(("https://server.icebingo.io:25563/api/v1/discord/stats/?serverId=" + serverId +
-	"&type=1&startDate=" + stDate.toISOString()), 
-	statUniqueUserSuccess, statUniqueUserFailure, '');
 }
 
 function statUserCountSuccess(resp) {
 	document.getElementById('user-count-stat-chart').innerHTML = "";
-	buildStatValueChart(resp.results, 'user-count-stat-chart', 'User Count');
-	document.getElementById("user-count-stat-loading").innerHTML = "";
+	buildStatValueChart(resp.results, 'user-count-stat-chart', 'User Count', 'statUCnt');
+	document.getElementById("user-count-stat-loading").innerHTML = getStringForDateGroup(sortOrders['statUCnt']);;
 	loadProgress++;
 }
 
@@ -536,10 +573,19 @@ function statUserCountFailure(resp) {
 	loadProgress++;
 }
 
+function loadUniqueUserStats() {
+	var stDate = new Date();
+	stDate = setDateForStat(stDate, 'statUnU');
+	document.getElementById("unique-user-stat-loading").innerHTML = "<span>Loading...</span>";
+	getJSON(("https://server.icebingo.io:25563/api/v1/discord/stats/?serverId=" + serverId +
+	"&type=1&startDate=" + stDate.toISOString() + "&dateGroup=" + sortOrders['statUnU']), 
+	statUniqueUserSuccess, statUniqueUserFailure, '');
+}
+
 function statUniqueUserSuccess(resp) {
 	document.getElementById('unique-user-stat-chart').innerHTML = "";
-	buildStatValueChart(resp.results, 'unique-user-stat-chart', 'Unique Users');
-	document.getElementById("unique-user-stat-loading").innerHTML = "";
+	buildStatValueChart(resp.results, 'unique-user-stat-chart', 'Unique Users', 'statUnU');
+	document.getElementById("unique-user-stat-loading").innerHTML = getStringForDateGroup(sortOrders['statUnU']);
 	loadProgress++;
 }
 
@@ -557,13 +603,50 @@ function statUniqueUserFailure(resp) {
 	loadProgress++;
 }
 
-function buildStatValueChart(data, elementId, valueTitle) {
+function setDateForStat(date, type) {
+	switch(sortOrders[type]) {
+		case 0:
+			date.setHours(date.getHours()-24);
+			break;
+		case 1:
+			date.setDate(date.getDate()-12);
+			break;
+		case 2:
+			date.setDate(date.getDate()-56);
+			break;
+		case 3:
+			date.setMonth(date.getMonth()-6)
+			break;
+		case 4:
+			date.setYear(date.getYear()-6)
+			break;
+	}
+	
+	return date;
+}
+
+function getStringForDateGroup(group) {
+	switch(group) {
+		case 0:
+			return "Hour";
+		case 1:
+			return "Day";
+		case 2:
+			return "Week";
+		case 3:
+			return "Month";
+		case 4:
+			return "Year";
+	}
+}
+
+function buildStatValueChart(data, elementId, valueTitle, type) {
 	var chartData = new google.visualization.DataTable();
 	chartData.addColumn('string', 'Date');
 	chartData.addColumn('number', valueTitle);
 	var rowsToAdd = [];
 	for(var i = 0; i < data.length; ++i) {
-		var date = moment.utc(data[i].date).format('MMM, DD');
+		var date = getStatDateFormat(data[i].date, type);
 		rowsToAdd.push([date, data[i].statValue]);
 	}
 	chartData.addRows(rowsToAdd);
@@ -571,7 +654,7 @@ function buildStatValueChart(data, elementId, valueTitle) {
 	var options = {
 		title: '',
 		width: statsUniqueUserCount.offsetWidth-10,
-		height: 325,
+		height: 300,
 		vAxis: { format: 'decimal', gridlines: {color: '#818181'}, baselineColor: '#818181' },
 		hAxis: { },
 		legend: 'none',
@@ -584,6 +667,29 @@ function buildStatValueChart(data, elementId, valueTitle) {
 	for(var i = 0; i < textBlocks.length; ++i) {
 		textBlocks.attr("fill", 'rgba(255,255,255,.7)');
 	}
+}
+
+function getStatDateFormat(date, type) {
+	var ret = "";
+	switch(sortOrders[type]) {
+		case 0:
+			ret = moment(date).format('Do, hh A');
+			break;
+		case 1:
+			ret = moment(date).format('MMM, Do');
+			break;
+		case 2:
+			ret = "Week " + moment(date).format('ww');
+			break;
+		case 3:
+			ret = moment(date).format('YYYY, MMM');
+			break;
+		case 4:
+			ret = moment(date).format('YYYY');
+			break;
+	}
+	
+	return ret;
 }
 //#endregion
 
@@ -663,7 +769,7 @@ window.onload = function () {
 	}
 	
 	function checkLoaded() {
-		if(loadProgress === endLoadCount) {
+		if(loadProgress >= endLoadCount) {
 			document.getElementById('fade-parent').style.opacity = "1";
 			document.getElementById('loading-parent').style.display = "none";
 		} else {
