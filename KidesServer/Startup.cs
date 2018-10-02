@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Newtonsoft.Json;
 
 namespace KidesServer
 {
@@ -33,6 +34,11 @@ namespace KidesServer
 
 
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+			services.AddMvc().AddJsonOptions(opt =>
+			{
+				opt.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+				opt.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
+			});
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -48,6 +54,8 @@ namespace KidesServer
 				app.UseHsts();
 			}
 
+			AppDomain.CurrentDomain.SetData("DataDirectory", System.IO.Path.Combine(env.ContentRootPath, "App_Data"));
+
 			app.UseHttpsRedirection();
 			app.UseStaticFiles();
 			app.UseCookiePolicy();
@@ -57,6 +65,9 @@ namespace KidesServer
 				routes.MapRoute(
 					name: "default",
 					template: "{controller=Home}/{action=Root}/{id?}");
+				routes.MapRoute(
+					name: "KidesApi",
+					template: "api/{controller}/{id}");
 			});
 		}
 	}

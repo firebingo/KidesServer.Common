@@ -295,7 +295,7 @@ function searchPlayer() {
 		var accessToken = playerTokenInput.value;
 		var region = playerRegionDropdown.value;
 		if(username) {
-			getJSON("https://server.icebingo.io:25563/api/v1/user-data/?username=" + username 
+			getJSON("/api/v1/user-data/?username=" + username 
 			+ ( accessToken ? ('&accessToken=' + accessToken) : '') 
 			+ ( region ? ('&region=' + region) : ''), loadPlayerData, loadPlayerFailure, '');
 		}

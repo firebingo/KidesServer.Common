@@ -30,7 +30,7 @@ var messageListAreaLoading = undefined;
 
 function loadMessageList() {
 	messageListAreaLoading.innerHTML = "<span>Loading...</span>";
-	getJSON(("https://server.icebingo.io:25563/api/v1/discord/message-count/list/?count=" + counts['messageList'] +
+	getJSON(("/api/v1/discord/message-count/list/?count=" + counts['messageList'] +
 	"&serverId=" + serverId + "&start=0" + "&sort=" + sortOrders['messageList'] + "&isDesc=" + isDesc['messageList']) + 
 	(filterInput['messageList'] ? ("&userFilter=" + encodeURIComponent(filterInput['messageList'])) : '') + "&includeTotal=true", 
 	messageListSucccess, messageListFailure, '');
@@ -110,7 +110,7 @@ function loadUserInfo(id) {
 	messageListAreaLoading.innerHTML = "<span>Loading...</span>";
 	//userInfoArea.style.display = "none";
 	//userTableArea.innerHTML = "";
-	getJSON(("https://server.icebingo.io:25563/api/v1/discord/user-info/?userId=" + id + 
+	getJSON(("/api/v1/discord/user-info/?userId=" + id + 
 	'&serverId=' + serverId), userInfoSuccess, userInfoFailure, '');
 }
 
@@ -199,7 +199,7 @@ var roleList = undefined;
 var seletedRoleId = '229598038438445056'; //Lydian Student role id
 
 function loadRoleList() {	
-	getJSON(("https://server.icebingo.io:25563/api/v1/discord/roles/?serverId=" + serverId), roleListSuccess, roleListFailure, '');
+	getJSON(("/api/v1/discord/roles/?serverId=" + serverId), roleListSuccess, roleListFailure, '');
 }
 
 function roleListSuccess(resp) {
@@ -224,7 +224,7 @@ function roleListFailure(resp) {
 
 function loadRoleMessageList() {
 	roleMessageListAreaLoading.innerHTML = "<span>Loading...</span>";
-	getJSON(("https://server.icebingo.io:25563/api/v1/discord/message-count/list/?count=" + counts['roleMesList'] +
+	getJSON(("/api/v1/discord/message-count/list/?count=" + counts['roleMesList'] +
 	"&serverId=" + serverId + "&start=0" + "&sort=" + sortOrders['roleMesList'] + "&isDesc=" + isDesc['roleMesList']) + 
 	(filterInput['roleMesList'] ? ("&userFilter=" + encodeURIComponent(filterInput['roleMesList'])) : '') + '&roleId=' + seletedRoleId + "&includeTotal=true", 
 	roleMesListSucccess, roleMesListFailure, '');
@@ -317,7 +317,7 @@ var emojiListTable = null;
 
 function loadEmojiList() {
 	emojiListAreaLoading.innerHTML = "<span>Loading...</span>";
-	getJSON(("https://server.icebingo.io:25563/api/v1/discord/emoji-count/list/?count=" + counts['emojiList'] +
+	getJSON(("/api/v1/discord/emoji-count/list/?count=" + counts['emojiList'] +
 	"&serverId=" + serverId + "&start=0" + "&sort=" + sortOrders['emojiList'] + "&isDesc=" + isDesc['emojiList']) + 
 	(filterInput['emojiList'] ? ("&nameFilter=" + filterInput['emojiList']) : '') + "&includeTotal=true&userFilterId=" + filterInput['emojiListId'], 
 	emojiListSucccess, emojiListFailure, '');
@@ -411,7 +411,7 @@ function loadWordList() {
 	}
 	wordListLoad = undefined;
 	wordListAreaLoading.innerHTML = "<span>Loading...</span>";
-	getJSON(("https://server.icebingo.io:25563/api/v1/discord/word-count/list/?count=" + counts['wordList'] +
+	getJSON(("/api/v1/discord/word-count/list/?count=" + counts['wordList'] +
 	"&serverId=" + serverId + "&start=0" + "&sort=" + sortOrders['wordList'] + "&isDesc=" + isDesc['wordList']) + 
 	(filterInput['wordList'] ? ("&wordFilter=" + encodeURIComponent(filterInput['wordList'])) : '') + 
 	(filterInput['wordListFloor'] ? ("&lengthFloor=" + filterInput['wordListFloor']) : '') +
@@ -547,7 +547,7 @@ function loadUserCountStats() {
 	var stDate = new Date();
 	stDate = setDateForStat(stDate, 'statUCnt');
 	document.getElementById("user-count-stat-loading").innerHTML = "<span>Loading...</span>";
-	getJSON(("https://server.icebingo.io:25563/api/v1/discord/stats/?serverId=" + serverId +
+	getJSON(("/api/v1/discord/stats/?serverId=" + serverId +
 	"&type=0&startDate=" + stDate.toISOString()+ "&dateGroup=" + sortOrders['statUCnt']), 
 	statUserCountSuccess, statUserCountFailure, '');
 }
@@ -577,7 +577,7 @@ function loadUniqueUserStats() {
 	var stDate = new Date();
 	stDate = setDateForStat(stDate, 'statUnU');
 	document.getElementById("unique-user-stat-loading").innerHTML = "<span>Loading...</span>";
-	getJSON(("https://server.icebingo.io:25563/api/v1/discord/stats/?serverId=" + serverId +
+	getJSON(("/api/v1/discord/stats/?serverId=" + serverId +
 	"&type=1&startDate=" + stDate.toISOString() + "&dateGroup=" + sortOrders['statUnU']), 
 	statUniqueUserSuccess, statUniqueUserFailure, '');
 }

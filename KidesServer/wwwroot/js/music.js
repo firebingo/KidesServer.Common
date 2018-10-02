@@ -1,9 +1,6 @@
 var songList = undefined;
 var albumList = undefined;
 var songStats = undefined;
-var baseUrl = window.location.href.split('/');
-baseUrl.length = 3;
-baseUrl = baseUrl.join('/');
 var baseSongUrl = "https://server.icebingo.io"
 var songListArea = document.getElementById("song-list-area");
 var songCountArea = document.getElementById("song-count-area");
@@ -118,5 +115,5 @@ function setSongStats(resp) {
 };
 function songStatsFailure(resp) {};
 
-getJSON(baseUrl + "/Js/SongList.min.json", setSongList, songListFailure, '');
-getJSON("https://server.icebingo.io:25563/api/v1/song-stats", setSongStats, songStatsFailure, '');
+getJSON("/Js/SongList.min.json", setSongList, songListFailure, '');
+//getJSON("https://server.icebingo.io:25563/api/v1/song-stats", setSongStats, songStatsFailure, '');
