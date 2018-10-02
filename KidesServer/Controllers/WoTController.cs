@@ -14,7 +14,7 @@ namespace KidesServer.Controllers
 	public class WoTController : ControllerBase
 	{
 		[HttpGet, Route("user-data")]
-		public async Task<IActionResult> getUserData([FromQuery]string username, [FromQuery]string region = "na", [FromQuery]string accessToken = null)
+		public async Task<IActionResult> GetUserData([FromQuery]string username, [FromQuery]string region = "na", [FromQuery]string accessToken = null)
 		{
 			var success = true;
 			var message = "";
@@ -22,7 +22,7 @@ namespace KidesServer.Controllers
 			WotBasicUser userInfo = null;
 			try
 			{
-				userInfo = await WoTLogic.callInfoAPI(username, region);
+				userInfo = await WoTLogic.CallInfoAPI(username, region);
 				if (userInfo.status == "error")
 				{
 					var code = Int32.Parse(userInfo.error.code);
@@ -49,7 +49,7 @@ namespace KidesServer.Controllers
 				}
 				else
 				{
-					data = await WoTLogic.callDataAPI(accountId, accessToken, region);
+					data = await WoTLogic.CallDataAPI(accountId, accessToken, region);
 					if(data?.data == null)
 					{
 						success = false;

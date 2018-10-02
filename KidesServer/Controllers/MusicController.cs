@@ -16,11 +16,11 @@ namespace KidesServer.Controllers
 	public class MusicController : ControllerBase
 	{
 		[HttpGet, Route("song-url")]
-		public async Task<IActionResult> getSongUrl([FromQuery]string searchString)
+		public async Task<IActionResult> GetSongUrl([FromQuery]string searchString)
 		{
 			try
 			{
-				var result = MusicLogic.searchForSong(searchString);
+				var result = await MusicLogic.SearchForSong(searchString);
 
 				if (result.success)
 					return Ok(result);

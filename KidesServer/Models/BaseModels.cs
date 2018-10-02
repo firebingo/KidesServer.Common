@@ -1,4 +1,6 @@
 ﻿
+using Newtonsoft.Json;
+
 namespace KidesServer.Models
 {
 	public class BaseResult
@@ -24,7 +26,8 @@ namespace KidesServer.Models
 		public string port;
 		public string schemaName;
 		private string _connectionString;
-		public string connectionString
+		[JsonIgnore]
+		public string ConnectionString
 		{
 			get
 			{

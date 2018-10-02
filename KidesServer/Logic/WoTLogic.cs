@@ -10,9 +10,9 @@ namespace KidesServer.Logic
 {
 	public static class WoTLogic
 	{
-		private static string appId = "";
-		private static Dictionary<string, string> userInfoUrls = null;
-		private static Dictionary<string, string> userDataUrls = null;
+		private static readonly string appId = "";
+		private static readonly Dictionary<string, string> userInfoUrls = null;
+		private static readonly Dictionary<string, string> userDataUrls = null;
 		//public static string userInfoUrl = "https://api.worldoftanks.com/wot/account/list/";
 		//public static string userDataUrl = "https://api.worldoftanks.com/wot/account/info/";
 
@@ -20,7 +20,7 @@ namespace KidesServer.Logic
 		{
 			try
 			{
-				appId = AppConfig.config.wotAppId;
+				appId = AppConfig.Config.wotAppId;
 				userInfoUrls = new Dictionary<string, string>()
 				{
 					{ "na", "https://api.worldoftanks.com/wot/account/list/" },
@@ -44,19 +44,18 @@ namespace KidesServer.Logic
 			}
 		}
 
-		public static async Task<WotBasicUser> callInfoAPI(string searchString, string region)
+		public static async Task<WotBasicUser> CallInfoAPI(string searchString, string region)
 		{
-			HttpClient client = new HttpClient();
-			client.BaseAddress = new Uri(userInfoUrls[region]);
+			HttpClient client = new HttpClient
+			{
+				BaseAddress = new Uri(userInfoUrls[region])
+			};
 
-			// Add an Accept header for JSON format.
 			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
-			// List data response.
-			HttpResponseMessage response = client.GetAsync($"?application_id={appId}&search={searchString}").Result;  // Blocking call!
+			HttpResponseMessage response = await client.GetAsync($"?application_id={appId}&search={searchString}");
 			if (response.IsSuccessStatusCode)
 			{
-				// Parse the response body. Blocking!
 				try
 				{
 					var dataObjects = response.Content.ReadAsAsync<WotBasicUser>().Result;
@@ -81,10 +80,12 @@ namespace KidesServer.Logic
 			}
 		}
 
-		public static async Task<WotUserInfo> callDataAPI(string accoundId, string accessToken, string region)
+		public static Task<WotUserInfo> CallDataAPI(string accoundId, string accessToken, string region)
 		{
-			HttpClient client = new HttpClient();
-			client.BaseAddress = new Uri(userDataUrls[region]);
+			HttpClient client = new HttpClient
+			{
+				BaseAddress = new Uri(userDataUrls[region])
+			};
 
 			client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -95,19 +96,19 @@ namespace KidesServer.Logic
 				{
 					var dataObjects = response.Content.ReadAsAsync<WotUserInfo>().Result;
 					if (dataObjects != null)
-						return dataObjects;
+						return Task.FromResult(dataObjects);
 					else
-						return null;
+						return Task.FromResult<WotUserInfo>(null);
 				}
 				catch (Exception e)
 				{
 					ErrorLog.writeLog(e.Message);
-					return null;
+					return Task.FromResult<WotUserInfo>(null);
 				}
 			}
 			else
 			{
-				return null;
+				return Task.FromResult<WotUserInfo>(null);
 			}
 		}
 	}

@@ -19,11 +19,10 @@ namespace KidesServer.Logic
 	public static class DiscordBotLogic
 	{
 		#region message list / user info
-		public static DiscordMessageListResult getMessageList(DiscordMessageListInput input)
+		public static async Task<DiscordMessageListResult> GetMessageList(DiscordMessageListInput input)
 		{
 			DiscordMessageListResult result = new DiscordMessageListResult();
-			DiscordMessageListResult cacheResult = GeneralCache.getCacheObject("MessageListCache", input.hash) as DiscordMessageListResult;
-			if (cacheResult != null)
+			if (GeneralCache.getCacheObject("MessageListCache", input.hash) is DiscordMessageListResult cacheResult)
 				return cacheResult;
 
 			result.results = new List<DiscordMessageListRow>();
@@ -54,24 +53,28 @@ namespace KidesServer.Logic
 									 LEFT JOIN usersinservers ON users.userID=usersinservers.userID
 									 WHERE usersinservers.serverID=@serverId AND usersinservers.mesCount > 0) prequery) mainquery";
 				}
-				var readList = new MessageListReadModel();
-				readList.rows = new List<MessageListReadModelRow>();
-				DataLayerShortcut.ExecuteReader<List<MessageListReadModelRow>>(readMessageList, readList.rows, queryString, new MySqlParameter("@serverId", input.serverId), new MySqlParameter("@startDate", input.startDate));
-				var roles = loadRoleList(input.serverId);
+				var readList = new MessageListReadModel
+				{
+					rows = new List<MessageListReadModelRow>()
+				};
+				await DataLayerShortcut.ExecuteReader<List<MessageListReadModelRow>>(ReadMessageList, readList.rows, queryString, new MySqlParameter("@serverId", input.serverId), new MySqlParameter("@startDate", input.startDate));
+				var roles = await LoadRoleList(input.serverId);
 				//Add the rows to the result
 				readList.rows = readList.rows.OrderByDescending(x => x.messageCount).ToList();
 				for (var i = 0; i < readList.rows.Count; ++i)
 				{
 					var r = readList.rows[i];
-					var message = new DiscordMessageListRow();
-					message.userName = $"{r.userName}{(r.nickName != null ? $" ({r.nickName})" : "")}";
-					message.messageCount = r.messageCount;
-					message.userId = r.userId.ToString();
-					message.isDeleted = r.isDeleted;
-					message.rank = i+1;
-					message.isBanned = r.isBanned;
-					message.role = buildRoleList(r.roleIds, roles);
-					message.roleIds = new List<string>(r.roleIds.ConvertAll<string>(x => x.ToString()));
+					var message = new DiscordMessageListRow
+					{
+						userName = $"{r.userName}{(r.nickName != null ? $" ({r.nickName})" : "")}",
+						messageCount = r.messageCount,
+						userId = r.userId.ToString(),
+						isDeleted = r.isDeleted,
+						rank = i + 1,
+						isBanned = r.isBanned,
+						role = BuildRoleList(r.roleIds, roles),
+						roleIds = new List<string>(r.roleIds.ConvertAll<string>(x => x.ToString()))
+					};
 					result.results.Add(message);
 				}
 				//Sort
@@ -97,15 +100,17 @@ namespace KidesServer.Logic
 				DiscordMessageListRow totalRow = null;
 				if (input.includeTotal)
 				{
-					totalRow = new DiscordMessageListRow();
-					totalRow.userName = "Total";
-					totalRow.messageCount = result.results.Sum(x => x.messageCount);
-					totalRow.userId = string.Empty;
-					totalRow.isDeleted = false;
-					totalRow.rank = result.results.Count;
-					totalRow.isBanned = false;
-					totalRow.role = string.Empty;
-					totalRow.roleIds = new List<string>();
+					totalRow = new DiscordMessageListRow
+					{
+						userName = "Total",
+						messageCount = result.results.Sum(x => x.messageCount),
+						userId = string.Empty,
+						isDeleted = false,
+						rank = result.results.Count,
+						isBanned = false,
+						role = string.Empty,
+						roleIds = new List<string>()
+					};
 				}
 				//Filter by role
 				DiscordMessageListRow totalRoleRow = null;
@@ -114,15 +119,17 @@ namespace KidesServer.Logic
 					result.results = result.results.Where(x => x.roleIds.Contains(input.roleId.Value.ToString())).ToList();
 					if (input.includeTotal)
 					{
-						totalRoleRow = new DiscordMessageListRow();
-						totalRoleRow.userName = "Total (Role)";
-						totalRoleRow.messageCount = result.results.Sum(x => x.messageCount);
-						totalRoleRow.userId = string.Empty;
-						totalRoleRow.isDeleted = false;
-						totalRoleRow.rank = result.results.Count;
-						totalRoleRow.isBanned = false;
-						totalRoleRow.role = buildRoleList(new List<ulong>() { input.roleId.Value }, roles);
-						totalRoleRow.roleIds = roles.results.FirstOrDefault(x => x.roleId == input.roleId.Value.ToString()) == null ? new List<string>() : new List<string>() { input.roleId.ToString() };
+						totalRoleRow = new DiscordMessageListRow
+						{
+							userName = "Total (Role)",
+							messageCount = result.results.Sum(x => x.messageCount),
+							userId = string.Empty,
+							isDeleted = false,
+							rank = result.results.Count,
+							isBanned = false,
+							role = BuildRoleList(new List<ulong>() { input.roleId.Value }, roles),
+							roleIds = roles.results.FirstOrDefault(x => x.roleId == input.roleId.Value.ToString()) == null ? new List<string>() : new List<string>() { input.roleId.ToString() }
+						};
 					}
 				}
 				//Set total count of results without paging
@@ -156,18 +163,17 @@ namespace KidesServer.Logic
 			return result;
 		}
 
-		private static void readMessageList(IDataReader reader, List<MessageListReadModelRow> data)
+		private static void ReadMessageList(IDataReader reader, List<MessageListReadModelRow> data)
 		{
 			reader = reader as MySqlDataReader;
 			if (reader != null && reader.FieldCount >= 7)
 			{
 				var mesObject = new MessageListReadModelRow();
 				ulong? temp = reader.GetValue(0) as ulong?;
-				mesObject.userId = temp.HasValue ? temp.Value : 0;
+				mesObject.userId = temp ?? 0;
 				mesObject.nickName = reader.GetValue(1) as string;
 				mesObject.userName = reader.GetValue(2) as string;
-				var tempString = reader.GetValue(3) as string;
-				if (tempString != null)
+				if (reader.GetValue(3) is string tempString)
 					mesObject.roleIds = JsonConvert.DeserializeObject<List<ulong>>(tempString);
 				else
 					mesObject.roleIds = new List<ulong>();
@@ -178,7 +184,7 @@ namespace KidesServer.Logic
 			}
 		}
 
-		public static DiscordUserInfo getUserInfo(ulong userId, ulong serverId)
+		public static async Task<DiscordUserInfo> GetUserInfo(ulong userId, ulong serverId)
 		{
 			var result = new DiscordUserInfo();
 
@@ -189,7 +195,7 @@ namespace KidesServer.Logic
 									LEFT JOIN usersinservers ON users.userID=usersinservers.userID
 									WHERE users.userID=@userId and serverID=@serverId;";
 				var readUser = new UserInfoReadModel();
-				DataLayerShortcut.ExecuteReader<UserInfoReadModel>(readUserInfo, readUser, queryString, new MySqlParameter("@serverId", serverId), new MySqlParameter("@userId", userId));
+				await DataLayerShortcut.ExecuteReader<UserInfoReadModel>(ReadUserInfo, readUser, queryString, new MySqlParameter("@serverId", serverId), new MySqlParameter("@userId", userId));
 				if (readUser.userId == 0)
 					throw new Exception("User not found");
 				queryString = @"SELECT COUNT(*), MONTH(mesTime), YEAR(mesTime) 
@@ -198,18 +204,18 @@ namespace KidesServer.Logic
 								GROUP BY DATE_FORMAT(mesTime, '%Y%m')
 								ORDER BY mesTime DESC;";
 				List<DiscordUserMessageDensity> density = new List<DiscordUserMessageDensity>();
-				DataLayerShortcut.ExecuteReader<List<DiscordUserMessageDensity>>(readUserMessageDensity, density, queryString, new MySqlParameter("@serverId", serverId), new MySqlParameter("@userId", userId));
-				var roles = loadRoleList(serverId);
+				await DataLayerShortcut.ExecuteReader<List<DiscordUserMessageDensity>>(ReadUserMessageDensity, density, queryString, new MySqlParameter("@serverId", serverId), new MySqlParameter("@userId", userId));
+				var roles = await LoadRoleList(serverId);
 				result.userId = readUser.userId.ToString();
 				result.userName = readUser.userName;
 				result.nickName = readUser.nickName;
 				result.isBot = readUser.isBot;
-				result.avatarUrl = readUser.avatarUrl != null ? readUser.avatarUrl.Replace("size=128", "size=256") : null;
+				result.avatarUrl = readUser.avatarUrl?.Replace("size=128", "size=256");
 				result.joinedDate = readUser.joinedDate;
 				result.isDeleted = readUser.isDeleted;
 				result.isBanned = readUser.isBanned;
 				result.messageDensity = density;
-				result.role = buildRoleList(readUser.roleIds, roles);
+				result.role = BuildRoleList(readUser.roleIds, roles);
 			}
 			catch (Exception e)
 			{
@@ -226,20 +232,19 @@ namespace KidesServer.Logic
 			return result;
 		}
 
-		private static void readUserInfo(IDataReader reader, UserInfoReadModel data)
+		private static void ReadUserInfo(IDataReader reader, UserInfoReadModel data)
 		{
 			reader = reader as MySqlDataReader;
 			if (reader != null && reader.FieldCount >= 8)
 			{
 				ulong? temp = reader.GetValue(0) as ulong?;
-				data.userId = temp.HasValue ? temp.Value : 0;
+				data.userId = temp ?? 0;
 				data.isBot = reader.GetBoolean(1);
 				data.userName = reader.GetValue(2) as string;
 				data.nickName = reader.GetValue(3) as string;
 				data.avatarUrl = reader.GetValue(4) as string;
 				data.joinedDate = reader.GetValue(5) as DateTime?;
-				var tempString = reader.GetValue(6) as string;
-				if (tempString != null)
+				if (reader.GetValue(6) is string tempString)
 					data.roleIds = JsonConvert.DeserializeObject<List<ulong>>(tempString);
 				else
 					data.roleIds = new List<ulong>();
@@ -248,13 +253,15 @@ namespace KidesServer.Logic
 			}
 		}
 
-		private static void readUserMessageDensity(IDataReader reader, List<DiscordUserMessageDensity> data)
+		private static void ReadUserMessageDensity(IDataReader reader, List<DiscordUserMessageDensity> data)
 		{
 			reader = reader as MySqlDataReader;
 			if (reader != null && reader.FieldCount >= 3)
 			{
-				var dObject = new DiscordUserMessageDensity();
-				dObject.messageCount = reader.GetInt32(0);
+				var dObject = new DiscordUserMessageDensity
+				{
+					messageCount = reader.GetInt32(0)
+				};
 				var month = reader.GetInt32(1);
 				var year = reader.GetInt32(2);
 				dObject.date = new DateTime(year, month, 1);
@@ -263,7 +270,7 @@ namespace KidesServer.Logic
 			}
 		}
 
-		private static string messageListSortOrderToParam(MessageSort sort, bool isDesc)
+		private static string MessageListSortOrderToParam(MessageSort sort, bool isDesc)
 		{
 			switch (sort)
 			{
@@ -277,23 +284,25 @@ namespace KidesServer.Logic
 		#endregion
 
 		#region role list
-		public static DiscordRoleList getRoleList(ulong serverId)
+		public static async Task<DiscordRoleList> GetRoleList(ulong serverId)
 		{
-			var result = loadRoleList(serverId);
+			var result = await LoadRoleList(serverId);
 			return result;
 		}
 
-		private static DiscordRoleList loadRoleList(ulong serverId)
+		private static async Task<DiscordRoleList> LoadRoleList(ulong serverId)
 		{
-			var results = new DiscordRoleList();
-			results.results = new List<DiscordRoleListRow>();
+			var results = new DiscordRoleList
+			{
+				results = new List<DiscordRoleListRow>()
+			};
 			try
 			{
 				var queryString = @"SELECT roles.roleId, roles.roleName, roles.roleColor, roles.isEveryone
 									FROM roles
 									WHERE roles.serverID=@serverId AND NOT isDeleted
 									ORDER BY roles.roleName";
-				DataLayerShortcut.ExecuteReader<List<DiscordRoleListRow>>(readRoleList, results.results, queryString, new MySqlParameter("@serverId", serverId));
+				await DataLayerShortcut.ExecuteReader<List<DiscordRoleListRow>>(ReadRoleList, results.results, queryString, new MySqlParameter("@serverId", serverId));
 			}
 			catch (Exception e)
 			{
@@ -310,7 +319,7 @@ namespace KidesServer.Logic
 			return results;
 		}
 
-		private static void readRoleList(IDataReader reader, List<DiscordRoleListRow> data)
+		private static void ReadRoleList(IDataReader reader, List<DiscordRoleListRow> data)
 		{
 			reader = reader as MySqlDataReader;
 			if (reader != null && reader.FieldCount >= 4)
@@ -325,7 +334,7 @@ namespace KidesServer.Logic
 			}
 		}
 
-		private static string buildRoleList(List<ulong> roleIds, DiscordRoleList roles)
+		private static string BuildRoleList(List<ulong> roleIds, DiscordRoleList roles)
 		{
 			var roleBuilder = new StringBuilder();
 			foreach (var Id in roleIds)
@@ -347,11 +356,10 @@ namespace KidesServer.Logic
 		#endregion
 
 		#region emoji list
-		public static DiscordEmojiListResult getEmojiList(DiscordEmojiListInput input)
+		public static async Task<DiscordEmojiListResult> GetEmojiList(DiscordEmojiListInput input)
 		{
 			DiscordEmojiListResult result = new DiscordEmojiListResult();
-			DiscordEmojiListResult cacheResult = GeneralCache.getCacheObject("EmojiListCache", input.hash) as DiscordEmojiListResult;
-			if (cacheResult != null)
+			if (GeneralCache.getCacheObject("EmojiListCache", input.hash) is DiscordEmojiListResult cacheResult)
 				return cacheResult;
 
 			try
@@ -370,9 +378,9 @@ namespace KidesServer.Logic
 									 AND messages.mesTime > @startDate AND emojiuses.userID!=@botId AND NOT emojiuses.isDeleted AND NOT messages.isDeleted AND messages.mesText NOT LIKE '%emojicount%' 
 									 GROUP BY emojiID
 									 ORDER BY emCount DESC) prequery) mainquery
-									 ORDER BY {emojiListSortOrderToParam(input.sort, input.isDesc)}";
-				DataLayerShortcut.ExecuteReader<List<DiscordEmojiListRow>>(readEmojiList, result.results, queryString, new MySqlParameter("@serverId", input.serverId),
-					new MySqlParameter("@startDate", input.startDate), new MySqlParameter("@botId", AppConfig.config.botId), new MySqlParameter("@userID", (input.userFilterId.HasValue ? input.userFilterId.Value : 0)));
+									 ORDER BY {EmojiListSortOrderToParam(input.sort, input.isDesc)}";
+				await DataLayerShortcut.ExecuteReader<List<DiscordEmojiListRow>>(ReadEmojiList, result.results, queryString, new MySqlParameter("@serverId", input.serverId),
+					new MySqlParameter("@startDate", input.startDate), new MySqlParameter("@botId", AppConfig.Config.botId), new MySqlParameter("@userID", (input.userFilterId ?? 0)));
 
 				//Filter by emojiname
 				if (input.nameFilter != string.Empty)
@@ -382,12 +390,14 @@ namespace KidesServer.Logic
 				DiscordEmojiListRow totalRow = null;
 				if (input.includeTotal)
 				{
-					totalRow = new DiscordEmojiListRow();
-					totalRow.emojiName = "Total";
-					totalRow.useCount = result.results.Sum(x => x.useCount);
-					totalRow.emojiId = string.Empty;
-					totalRow.emojiImg = string.Empty;
-					totalRow.rank = result.results.Count;
+					totalRow = new DiscordEmojiListRow
+					{
+						emojiName = "Total",
+						useCount = result.results.Sum(x => x.useCount),
+						emojiId = string.Empty,
+						emojiImg = string.Empty,
+						rank = result.results.Count
+					};
 				}
 
 				//Set total count of results without paging
@@ -419,14 +429,14 @@ namespace KidesServer.Logic
 			return result;
 		}
 
-		private static void readEmojiList(IDataReader reader, List<DiscordEmojiListRow> data)
+		private static void ReadEmojiList(IDataReader reader, List<DiscordEmojiListRow> data)
 		{
 			reader = reader as MySqlDataReader;
 			if (reader != null && reader.FieldCount >= 4)
 			{
 				var emObject = new DiscordEmojiListRow();
 				ulong? temp = reader.GetValue(0) as ulong?;
-				emObject.emojiId = (temp.HasValue ? temp.Value : 0).ToString();
+				emObject.emojiId = (temp ?? 0).ToString();
 				emObject.emojiName = reader.GetValue(1) as string;
 				emObject.useCount = reader.GetInt32(2);
 				emObject.rank = reader.GetInt32(3);
@@ -437,7 +447,7 @@ namespace KidesServer.Logic
 			}
 		}
 
-		private static bool doesImageGifExist(string url)
+		private static bool DoesImageGifExist(string url)
 		{
 			HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
 			request.Timeout = 750;
@@ -457,7 +467,7 @@ namespace KidesServer.Logic
 			}
 		}
 
-		private static string emojiListSortOrderToParam(EmojiSort sort, bool isDesc)
+		private static string EmojiListSortOrderToParam(EmojiSort sort, bool isDesc)
 		{
 			switch (sort)
 			{
@@ -471,14 +481,13 @@ namespace KidesServer.Logic
 		#endregion
 
 		#region word counts
-		public static async Task<DiscordWordListResult> getWordCountList(DiscordWordListInput input)
+		public static async Task<DiscordWordListResult> GetWordCountList(DiscordWordListInput input)
 		{
 			DiscordWordListResult result = new DiscordWordListResult();
-			DiscordWordListResult cacheResult = GeneralCache.getCacheObject("WordCountListCache", input.hash) as DiscordWordListResult;
-			if (cacheResult != null)
+			if (GeneralCache.getCacheObject("WordCountListCache", input.hash) is DiscordWordListResult cacheResult)
 				return cacheResult;
 
-			var messages = await loadMessagesText(input.startDate);
+			var messages = await LoadMessagesText(input.startDate);
 			ConcurrentDictionary<string, ConcurrentDictionary<ulong, int>> words = null;
 			var discordMentionReg = new Regex(@"<@\d+>");
 			var discordEmojiReg = new Regex(@"<:.+:\d+>");
@@ -496,12 +505,12 @@ namespace KidesServer.Logic
 			if (words == null)
 			{
 				//remove code blocks
-				messages = messages.Where(x => !x.mesText.Contains("```")).ToList();
+				messages = messages.Where(x => !x.MesText.Contains("```")).ToList();
 				words = new ConcurrentDictionary<string, ConcurrentDictionary<ulong, int>>();
 				Parallel.ForEach(messages, parOpts, (message) =>
 				{
 					//split the messages on spaces/new lines.
-					var split = message.mesText.Trim().Split(new[] { "\r\n", "\r", "\n", " " }, StringSplitOptions.RemoveEmptyEntries);
+					var split = message.MesText.Trim().Split(new[] { "\r\n", "\r", "\n", " " }, StringSplitOptions.RemoveEmptyEntries);
 					//remove words with http (probably links), discord formats, or files
 					split = split.Where(x => !x.Contains("http") && !discordMentionReg.IsMatch(x) && !discordEmojiReg.IsMatch(x) && !discordIdenReg.IsMatch(x) && !fileReg.IsMatch(x)).ToArray();
 					//remove puncuation/unicode and lowercase all words.
@@ -532,12 +541,12 @@ namespace KidesServer.Logic
 						words.AddOrUpdate(split[i], (newKey) =>
 							{
 								var ret = new ConcurrentDictionary<ulong, int>();
-								ret.TryAdd(message.userId, 1);
+								ret.TryAdd(message.UserId, 1);
 								return ret;
 							},
 							(key, oldValue) =>
 							{
-								oldValue.AddOrUpdate(message.userId, 1, (keyI, oldValueI) => ++oldValueI);
+								oldValue.AddOrUpdate(message.UserId, 1, (keyI, oldValueI) => ++oldValueI);
 								return oldValue;
 							});
 					}
@@ -592,9 +601,11 @@ namespace KidesServer.Logic
 			{
 				foreach (var word in userWords)
 				{
-					var row = new DiscordWordListRow();
-					row.word = word.Key;
-					row.useCount = word.Value.Sum(x => x.Value);
+					var row = new DiscordWordListRow
+					{
+						word = word.Key,
+						useCount = word.Value.Sum(x => x.Value)
+					};
 					result.results.Add(row);
 				}
 			}
@@ -602,9 +613,11 @@ namespace KidesServer.Logic
 			{
 				foreach (var word in words)
 				{
-					var row = new DiscordWordListRow();
-					row.word = word.Key;
-					row.useCount = word.Value.Sum(x => x.Value);
+					var row = new DiscordWordListRow
+					{
+						word = word.Key,
+						useCount = word.Value.Sum(x => x.Value)
+					};
 					result.results.Add(row);
 				}
 			}
@@ -678,11 +691,10 @@ namespace KidesServer.Logic
 			return result;
 		}
 
-		public static async Task<List<MessageTextModel>> loadMessagesText(DateTime? startDate)
+		public static async Task<List<MessageTextModel>> LoadMessagesText(DateTime? startDate)
 		{
 			var result = new List<MessageTextModel>();
-			List<MessageTextModel> cacheResult = GeneralCache.getCacheObject("MessageTextCache", $"MessageTextList{(startDate.HasValue ? startDate.Value.Ticks.ToString() : "0")}") as List<MessageTextModel>;
-			if (cacheResult != null)
+			if (GeneralCache.getCacheObject("MessageTextCache", $"MessageTextList{(startDate.HasValue ? startDate.Value.Ticks.ToString() : "0")}") is List<MessageTextModel> cacheResult)
 				return cacheResult;
 
 			var query = $@"SELECT txt, userID FROM 
@@ -690,14 +702,14 @@ namespace KidesServer.Logic
 						  FROM messages 
 						  WHERE NOT isDeleted AND userId != @botId AND mesTime > @startDate) x
 						  WHERE txt != '' AND txt NOT LIKE '%@botId%'";
-			DataLayerShortcut.ExecuteReader<List<MessageTextModel>>(readMessagesText, result, query,
-				new MySqlParameter("@botId", AppConfig.config.botId), new MySqlParameter("@startDate", startDate.HasValue ? startDate.Value : DateTime.MinValue));
+			await DataLayerShortcut.ExecuteReader<List<MessageTextModel>>(ReadMessagesText, result, query,
+				new MySqlParameter("@botId", AppConfig.Config.botId), new MySqlParameter("@startDate", startDate ?? DateTime.MinValue));
 
 			GeneralCache.newCacheObject("MessageTextCache", $"MessageTextList{(startDate.HasValue ? startDate.Value.Ticks.ToString() : "0")}", result, new TimeSpan(12, 0, 0));
 			return result;
 		}
 
-		private static void readMessagesText(IDataReader reader, List<MessageTextModel> data)
+		private static void ReadMessagesText(IDataReader reader, List<MessageTextModel> data)
 		{
 			reader = reader as MySqlDataReader;
 			if (reader != null)
@@ -709,7 +721,7 @@ namespace KidesServer.Logic
 		#endregion
 
 		#region stats
-		public static Task<DiscordStatResult> getServerStats(DiscordStatListInput input)
+		public static async Task<DiscordStatResult> GetServerStats(DiscordStatListInput input)
 		{
 			DiscordStatResult result = new DiscordStatResult();
 			//DiscordStatResult cacheResult = GeneralCache.getCacheObject("StatResultCache", input.hash) as DiscordStatResult;
@@ -721,7 +733,7 @@ namespace KidesServer.Logic
 				result.results = new List<DiscordStatRow>();
 				var query = "SELECT * FROM stats WHERE statType=@statType AND serverId=@serverId AND dateGroup=@dateGroup AND statTime BETWEEN @startDate AND @endDate";
 				var readRows = new List<DiscordStatRow>();
-				DataLayerShortcut.ExecuteReader(readServerStats, readRows, query, new MySqlParameter("@statType", input.statType), new MySqlParameter("@serverId", input.serverId), 
+				await DataLayerShortcut.ExecuteReader(ReadServerStats, readRows, query, new MySqlParameter("@statType", input.statType), new MySqlParameter("@serverId", input.serverId), 
 					new MySqlParameter("@startDate", input.startDate.ToUniversalTime()), new MySqlParameter("@endDate", input.endDate ?? DateTime.UtcNow.ToUniversalTime()), new MySqlParameter("@dateGroup", input.dateGroup));
 				var statDict = new Dictionary<DateTime, List<long>>();
 				foreach (var res in readRows)
@@ -773,20 +785,20 @@ namespace KidesServer.Logic
 			{
 				
 				ErrorLog.writeLog(e.Message);
-				return Task.FromResult(new DiscordStatResult()
+				return new DiscordStatResult()
 				{
 					success = false,
 					message = e.Message
-				});
+				};
 			}
 
 			//GeneralCache.newCacheObject("StatResultCache", input.hash, result, new TimeSpan(0, 10, 0));
 			result.success = true;
 			result.message = string.Empty;
-			return Task.FromResult(result);
+			return result;
 		}
 
-		private static void readServerStats(IDataReader reader, List<DiscordStatRow> data)
+		private static void ReadServerStats(IDataReader reader, List<DiscordStatRow> data)
 		{
 			reader = reader as MySqlDataReader;
 			if (reader != null && reader.FieldCount >= 5)
@@ -838,8 +850,8 @@ namespace KidesServer.Logic
 	{
 		private readonly string _mesText;
 		private readonly ulong _userId;
-		public string mesText { get { return _mesText; } }
-		public ulong userId { get { return _userId; } }
+		public string MesText { get { return _mesText; } }
+		public ulong UserId { get { return _userId; } }
 
 		public MessageTextModel(string t, ulong userId)
 		{

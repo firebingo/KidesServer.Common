@@ -22,7 +22,7 @@ namespace KidesServer
 			}
 		}
 
-		public static ConfigModel config
+		public static ConfigModel Config
 		{
 			get
 			{

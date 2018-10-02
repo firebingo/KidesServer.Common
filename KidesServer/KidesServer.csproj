@@ -13,6 +13,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="2.2.0-preview2-35157" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
     <PackageReference Include="MySql.Data" Version="8.0.12" />
+    <PackageReference Include="React.AspNet" Version="4.0.0-beta3" />
   </ItemGroup>
 
   <ItemGroup>

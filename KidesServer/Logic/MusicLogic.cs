@@ -14,7 +14,7 @@ namespace KidesServer.Logic
 {
 	public static class MusicLogic
 	{
-		public static string baseUrl = AppConfig.config.baseMusicUrl;
+		public static string baseUrl = AppConfig.Config.baseMusicUrl;
 		public static SongList songList = new SongList();
 		private static bool songFound = false;
 		private static SongModel foundSong = null;
@@ -24,12 +24,14 @@ namespace KidesServer.Logic
 			songList = JsonConvert.DeserializeObject<SongList>(File.ReadAllText($"{AppConfig.folderLocation}\\SongList.json"));
 		}
 
-		public static SongSearchResult searchForSong(string search)
+		public static Task<SongSearchResult> SearchForSong(string search)
 		{
-			SongSearchResult result = new SongSearchResult();
-			result.success = false;
-			result.message = "SONG_NOT_FOUND";
-			result.url = baseUrl;
+			SongSearchResult result = new SongSearchResult
+			{
+				success = false,
+				message = "SONG_NOT_FOUND",
+				url = baseUrl
+			};
 			songFound = false;
 			foundSong = null;
 			var searchLower = search.ToLowerInvariant();
@@ -38,7 +40,7 @@ namespace KidesServer.Logic
 			var matches = new ConcurrentBag<SongModel>();
 			Parallel.ForEach(songList.songList, (song, ParallelLoopState) =>
 			{
-				var found = checkSong(song, searchLower);
+				var found = CheckSong(song, searchLower);
 				if(found != null)
 				{
 					songFound = true;
@@ -52,7 +54,7 @@ namespace KidesServer.Logic
 			var shortestDistance = int.MaxValue;
 			foreach (var match in matches)
 			{
-				var distance = songModelDistance(match, searchLower);
+				var distance = SongModelDistance(match, searchLower);
 				if(distance < shortestDistance)
 				{
 					foundSong = match;
@@ -74,10 +76,10 @@ namespace KidesServer.Logic
 			var end = DateTime.Now;
 			var length = (end - start).TotalMilliseconds;
 
-			return result;
+			return Task.FromResult(result);
 		}
 
-		private static int songModelDistance(SongModel song, string search)
+		private static int SongModelDistance(SongModel song, string search)
 		{ 
 			var distance = int.MaxValue;
 			var shortestDistance = int.MaxValue;
@@ -113,7 +115,7 @@ namespace KidesServer.Logic
 			}
 		}
 
-		public static SongModel checkSong(SongModel song, string search)
+		public static SongModel CheckSong(SongModel song, string search)
 		{
 			Regex searchReg = new Regex(search);
 			var titleCat = $"{song.English.ToLowerInvariant()}|{song.Roman.ToLowerInvariant()}|{song.Japanese.ToLowerInvariant()}|{song.Hiragana.ToLowerInvariant()}";

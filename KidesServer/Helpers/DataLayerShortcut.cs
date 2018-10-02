@@ -2,19 +2,21 @@
 using System;
 using System.Data;
 using KidesServer.Models;
+using System.Threading.Tasks;
+using System.Data.Common;
 
 namespace KidesServer.DataBase
 {
 	public static class DataLayerShortcut
 	{
-		public static bool schemaExists { get; private set; } = true;
+		public static bool SchemaExists { get; private set; } = true;
 
-		public static BaseResult testConnection()
+		public static BaseResult TestConnection()
 		{
 			var result = new BaseResult();
 			try
 			{
-				var connection = new MySql.Data.MySqlClient.MySqlConnection(AppConfig.config.DBConfig.connectionString);
+				var connection = new MySql.Data.MySqlClient.MySqlConnection(AppConfig.Config.DBConfig.ConnectionString);
 				connection.Open();
 				connection.Close();
 				connection.Dispose();
@@ -22,7 +24,7 @@ namespace KidesServer.DataBase
 			catch (MySqlException e)
 			{
 				if (e.InnerException.Message.ToUpperInvariant().Contains("UNKNOWN DATABASE"))
-					schemaExists = false;
+					SchemaExists = false;
 
 				result.success = false;
 				result.message = e.Message;
@@ -32,18 +34,18 @@ namespace KidesServer.DataBase
 			return result;
 		}
 
-		public static void ExecuteReader<T>(Action<IDataReader, T> workFunction, T otherdata, string query, params MySqlParameter[] parameters)
+		public static async Task ExecuteReader<T>(Action<IDataReader, T> workFunction, T otherdata, string query, params MySqlParameter[] parameters)
 		{
-			var connection = new MySqlConnection(AppConfig.config.DBConfig.connectionString);
+			var connection = new MySqlConnection(AppConfig.Config.DBConfig.ConnectionString);
 			connection.Open();
 			if (connection.State == ConnectionState.Open)
 			{
 				MySqlCommand cmd = new MySqlCommand(query, connection);
-				MySqlDataReader reader = null;
+				DbDataReader reader = null;
 				if (parameters != null)
-					DataHelper.addParams(ref cmd, parameters);
+					DataHelper.AddParams(ref cmd, parameters);
 
-				reader = cmd.ExecuteReader();
+				reader = await cmd.ExecuteReaderAsync();
 
 				while (reader.Read())
 					workFunction(reader, otherdata);
@@ -55,20 +57,22 @@ namespace KidesServer.DataBase
 			connection.Dispose();
 		}
 
-		public static string ExecuteNonQuery(string query, params MySqlParameter[] parameters)
+		public static async Task<string> ExecuteNonQuery(string query, params MySqlParameter[] parameters)
 		{
-			var connection = new MySqlConnection(AppConfig.config.DBConfig.connectionString);
+			var connection = new MySqlConnection(AppConfig.Config.DBConfig.ConnectionString);
 			try
 			{
 				connection.Open();
 				if (connection.State == ConnectionState.Open)
 				{
-					MySqlCommand cmd = new MySqlCommand(query, connection);
-					cmd.CommandType = CommandType.Text;
+					MySqlCommand cmd = new MySqlCommand(query, connection)
+					{
+						CommandType = CommandType.Text
+					};
 					if (parameters != null)
-						DataHelper.addParams(ref cmd, parameters);
+						DataHelper.AddParams(ref cmd, parameters);
 
-					cmd.ExecuteNonQuery();
+					await cmd.ExecuteNonQueryAsync();
 					cmd.Dispose();
 				}
 				connection.Close();
@@ -83,34 +87,38 @@ namespace KidesServer.DataBase
 			}
 		}
 
-		public static void ExecuteSpecialNonQuery(string query, string connection, params MySqlParameter[] parameters)
+		public static async Task ExecuteSpecialNonQuery(string query, string connection, params MySqlParameter[] parameters)
 		{
 			var conn = new MySqlConnection(connection);
 			conn.Open();
-			MySqlCommand cmd = new MySqlCommand(query, conn);
-			cmd.CommandType = CommandType.Text;
+			MySqlCommand cmd = new MySqlCommand(query, conn)
+			{
+				CommandType = CommandType.Text
+			};
 			if (parameters != null)
-				DataHelper.addParams(ref cmd, parameters);
+				DataHelper.AddParams(ref cmd, parameters);
 
-			cmd.ExecuteNonQuery();
+			await cmd.ExecuteNonQueryAsync();
 			cmd.Dispose();
 			conn.Close();
 			conn.Dispose();
 		}
 
-		public static int? ExecuteScalar(string query, params MySqlParameter[] parameters)
+		public static async Task<int?> ExecuteScalar(string query, params MySqlParameter[] parameters)
 		{
 			int? result = null;
-			var connection = new MySqlConnection(AppConfig.config.DBConfig.connectionString);
+			var connection = new MySqlConnection(AppConfig.Config.DBConfig.ConnectionString);
 			connection.Open();
 			if (connection.State == ConnectionState.Open)
 			{
-				MySqlCommand cmd = new MySqlCommand(query, connection);
-				cmd.CommandType = CommandType.Text;
+				MySqlCommand cmd = new MySqlCommand(query, connection)
+				{
+					CommandType = CommandType.Text
+				};
 				if (parameters != null)
-					DataHelper.addParams(ref cmd, parameters);
+					DataHelper.AddParams(ref cmd, parameters);
 
-				object scalar = cmd.ExecuteScalar();
+				object scalar = await cmd.ExecuteScalarAsync();
 				try
 				{
 					result = Convert.ToInt32(scalar);

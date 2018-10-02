@@ -6,7 +6,7 @@ namespace KidesServer.DataBase
 {
 	public static class DataHelper
 	{	
-		public static void addParams(ref MySqlCommand cmd, MySqlParameter[] paramters)
+		public static void AddParams(ref MySqlCommand cmd, MySqlParameter[] paramters)
 		{
 			foreach (var p in paramters)
 			{
