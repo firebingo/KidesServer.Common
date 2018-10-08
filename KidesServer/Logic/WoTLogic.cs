@@ -40,7 +40,7 @@ namespace KidesServer.Logic
 			}
 			catch (Exception e)
 			{
-				ErrorLog.writeLog(e.Message);
+				ErrorLog.WriteLog(e.Message);
 			}
 		}
 
@@ -70,7 +70,7 @@ namespace KidesServer.Logic
 				}
 				catch (Exception e)
 				{
-					ErrorLog.writeLog(e.Message);
+					ErrorLog.WriteLog(e.Message);
 					return null;
 				}
 			}
@@ -102,7 +102,7 @@ namespace KidesServer.Logic
 				}
 				catch (Exception e)
 				{
-					ErrorLog.writeLog(e.Message);
+					ErrorLog.WriteLog(e.Message);
 					return Task.FromResult<WotUserInfo>(null);
 				}
 			}

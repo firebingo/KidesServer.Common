@@ -22,7 +22,7 @@ namespace KidesServer.Logic
 		public static async Task<DiscordMessageListResult> GetMessageList(DiscordMessageListInput input)
 		{
 			DiscordMessageListResult result = new DiscordMessageListResult();
-			if (GeneralCache.getCacheObject("MessageListCache", input.hash) is DiscordMessageListResult cacheResult)
+			if (GeneralCache.GetCacheObject("MessageListCache", input.hash) is DiscordMessageListResult cacheResult)
 				return cacheResult;
 
 			result.results = new List<DiscordMessageListRow>();
@@ -149,7 +149,7 @@ namespace KidesServer.Logic
 			}
 			catch (Exception e)
 			{
-				ErrorLog.writeLog(e.Message);
+				ErrorLog.WriteLog(e.Message);
 				return new DiscordMessageListResult()
 				{
 					success = false,
@@ -157,7 +157,7 @@ namespace KidesServer.Logic
 				};
 			}
 
-			GeneralCache.newCacheObject("MessageListCache", input.hash, result, new TimeSpan(0, 10, 0));
+			GeneralCache.NewCacheObject("MessageListCache", input.hash, result, new TimeSpan(0, 10, 0));
 			result.success = true;
 			result.message = string.Empty;
 			return result;
@@ -219,7 +219,7 @@ namespace KidesServer.Logic
 			}
 			catch (Exception e)
 			{
-				ErrorLog.writeLog(e.Message);
+				ErrorLog.WriteLog(e.Message);
 				return new DiscordUserInfo()
 				{
 					success = false,
@@ -306,7 +306,7 @@ namespace KidesServer.Logic
 			}
 			catch (Exception e)
 			{
-				ErrorLog.writeLog(e.Message);
+				ErrorLog.WriteLog(e.Message);
 				return new DiscordRoleList()
 				{
 					success = false,
@@ -359,7 +359,7 @@ namespace KidesServer.Logic
 		public static async Task<DiscordEmojiListResult> GetEmojiList(DiscordEmojiListInput input)
 		{
 			DiscordEmojiListResult result = new DiscordEmojiListResult();
-			if (GeneralCache.getCacheObject("EmojiListCache", input.hash) is DiscordEmojiListResult cacheResult)
+			if (GeneralCache.GetCacheObject("EmojiListCache", input.hash) is DiscordEmojiListResult cacheResult)
 				return cacheResult;
 
 			try
@@ -415,7 +415,7 @@ namespace KidesServer.Logic
 			}
 			catch (Exception e)
 			{
-				ErrorLog.writeLog(e.Message);
+				ErrorLog.WriteLog(e.Message);
 				return new DiscordEmojiListResult()
 				{
 					success = false,
@@ -423,7 +423,7 @@ namespace KidesServer.Logic
 				};
 			}
 
-			GeneralCache.newCacheObject("EmojiListCache", input.hash, result, new TimeSpan(0, 10, 0));
+			GeneralCache.NewCacheObject("EmojiListCache", input.hash, result, new TimeSpan(0, 10, 0));
 			result.success = true;
 			result.message = string.Empty;
 			return result;
@@ -484,7 +484,7 @@ namespace KidesServer.Logic
 		public static async Task<DiscordWordListResult> GetWordCountList(DiscordWordListInput input)
 		{
 			DiscordWordListResult result = new DiscordWordListResult();
-			if (GeneralCache.getCacheObject("WordCountListCache", input.hash) is DiscordWordListResult cacheResult)
+			if (GeneralCache.GetCacheObject("WordCountListCache", input.hash) is DiscordWordListResult cacheResult)
 				return cacheResult;
 
 			var messages = await LoadMessagesText(input.startDate);
@@ -498,9 +498,9 @@ namespace KidesServer.Logic
 			var ignoreChars = new List<char>() { '`', '~', '$', '%', '^', '|', '+', '=', '<', '>', '\n', '\r', '\t', '\b', '\v', '\a', '\0', 'ﾟ', 'ˆ', 'ᵃ', 'ｰ', 'ー', 'ˈ', 'ː' };
 			var parOpts = new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount / 2 };
 
-			var wordsCached = GeneralCache.containsCacheObject("MessageTextCache", $"WordsList:{(input.startDate.HasValue ? input.startDate.Value.Ticks.ToString() : "_")}:{input.englishOnly.ToString()}");
+			var wordsCached = GeneralCache.ContainsCacheObject("MessageTextCache", $"WordsList:{(input.startDate.HasValue ? input.startDate.Value.Ticks.ToString() : "_")}:{input.englishOnly.ToString()}");
 			if (wordsCached)
-				words = GeneralCache.getCacheObject("MessageTextCache", $"WordsList:{(input.startDate.HasValue ? input.startDate.Value.Ticks.ToString() : "_")}:{input.englishOnly.ToString()}") as ConcurrentDictionary<string, ConcurrentDictionary<ulong, int>>;
+				words = GeneralCache.GetCacheObject("MessageTextCache", $"WordsList:{(input.startDate.HasValue ? input.startDate.Value.Ticks.ToString() : "_")}:{input.englishOnly.ToString()}") as ConcurrentDictionary<string, ConcurrentDictionary<ulong, int>>;
 
 			if (words == null)
 			{
@@ -533,7 +533,7 @@ namespace KidesServer.Logic
 					split = split.Where(x => (x.Length >= 10 ? x.Distinct().Count() > 3 : true)).ToArray();
 					//this is getting dumb
 					split = split.Where(x => (x.Length > 50 ? x.Distinct().Count() > 4 : true)).ToArray();
-					//lets put a "resonable" cap on this
+					//lets put a "reasonable" cap on this
 					split = split.Where(x => x.Length <= 125).ToArray();
 					for (var i = 0; i < split.Length; ++i)
 					{
@@ -554,7 +554,7 @@ namespace KidesServer.Logic
 			}
 
 			if (!wordsCached)
-				GeneralCache.newCacheObject("MessageTextCache", $"WordsList:{(input.startDate.HasValue ? input.startDate.Value.Ticks.ToString() : "_")}:{input.englishOnly.ToString()}", words, new TimeSpan(12, 0, 0));
+				GeneralCache.NewCacheObject("MessageTextCache", $"WordsList:{(input.startDate.HasValue ? input.startDate.Value.Ticks.ToString() : "_")}:{input.englishOnly.ToString()}", words, new TimeSpan(12, 0, 0));
 
 			//Generate total row
 			DiscordWordListRow totalRow = null;
@@ -684,7 +684,7 @@ namespace KidesServer.Logic
 				result.results.Add(totalRow);
 			}
 
-			GeneralCache.newCacheObject("WordCountListCache", input.hash, result, new TimeSpan(12, 0, 0));
+			GeneralCache.NewCacheObject("WordCountListCache", input.hash, result, new TimeSpan(12, 0, 0));
 			GC.Collect();
 			result.success = true;
 			result.message = string.Empty;
@@ -694,7 +694,7 @@ namespace KidesServer.Logic
 		public static async Task<List<MessageTextModel>> LoadMessagesText(DateTime? startDate)
 		{
 			var result = new List<MessageTextModel>();
-			if (GeneralCache.getCacheObject("MessageTextCache", $"MessageTextList{(startDate.HasValue ? startDate.Value.Ticks.ToString() : "0")}") is List<MessageTextModel> cacheResult)
+			if (GeneralCache.GetCacheObject("MessageTextCache", $"MessageTextList{(startDate.HasValue ? startDate.Value.Ticks.ToString() : "0")}") is List<MessageTextModel> cacheResult)
 				return cacheResult;
 
 			var query = $@"SELECT txt, userID FROM 
@@ -705,7 +705,7 @@ namespace KidesServer.Logic
 			await DataLayerShortcut.ExecuteReader<List<MessageTextModel>>(ReadMessagesText, result, query,
 				new MySqlParameter("@botId", AppConfig.Config.botId), new MySqlParameter("@startDate", startDate ?? DateTime.MinValue));
 
-			GeneralCache.newCacheObject("MessageTextCache", $"MessageTextList{(startDate.HasValue ? startDate.Value.Ticks.ToString() : "0")}", result, new TimeSpan(12, 0, 0));
+			GeneralCache.NewCacheObject("MessageTextCache", $"MessageTextList{(startDate.HasValue ? startDate.Value.Ticks.ToString() : "0")}", result, new TimeSpan(12, 0, 0));
 			return result;
 		}
 
@@ -784,7 +784,7 @@ namespace KidesServer.Logic
 			catch (Exception e)
 			{
 				
-				ErrorLog.writeLog(e.Message);
+				ErrorLog.WriteLog(e.Message);
 				return new DiscordStatResult()
 				{
 					success = false,

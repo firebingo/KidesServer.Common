@@ -5,7 +5,8 @@ namespace KidesServer
 {
 	public static class ErrorLog
 	{
-		private static string folderLocation = String.Empty;
+		private static readonly object locker = new object();
+		private static readonly string folderLocation = string.Empty;
 		static ErrorLog()
 		{
 			folderLocation = $"{AppDomain.CurrentDomain.GetData("DataDirectory").ToString()}\\Logs";
@@ -15,16 +16,51 @@ namespace KidesServer
 			}
 		}
 
-		public static void writeLog(string log)
+		public static void WriteLog(string log)
 		{
-			var dateString = DateTime.Now.ToString("yyyyMMdd");
-			var path = $"{folderLocation}\\{dateString}_Errors.log";
-			if (!File.Exists(path))
-				using (File.Create(path)) { }
-			using (var writer = File.AppendText(path))
+			try
 			{
-				var fullDateString = DateTime.Now.ToString("[yyyy-MM-dd hh:MM:ss]");
-				writer.WriteLine($"{fullDateString} - {log}");
+				lock (locker)
+				{
+					var now = DateTime.Now;
+					var dateString = now.ToString("yyyyMMdd");
+					var path = $"{folderLocation}/{dateString}_Errors.log";
+					if (!File.Exists(path))
+						using (File.Create(path)) { }
+					using (var writer = File.AppendText(path))
+					{
+						var fullDateString = now.ToString("[yyyy-MM-dd hh:mm:ss]");
+						writer.WriteLine($"{fullDateString} - {log}");
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Shits fucked yo\n(Failed to write to error log: {ex.Message})");
+			}
+		}
+
+		public static void WriteError(Exception e)
+		{
+			try
+			{
+				lock (locker)
+				{
+					var now = DateTime.Now;
+					var dateString = now.ToString("yyyyMMdd");
+					var path = $"{folderLocation}\\{dateString}_Errors.log";
+					if (!File.Exists(path))
+						using (File.Create(path)) { }
+					using (var writer = File.AppendText(path))
+					{
+						var fullDateString = now.ToString("[yyyy-MM-dd hh:mm:ss]");
+						writer.WriteLine($"{fullDateString} - Message: {e.Message}, Stack Trace: {e.StackTrace}");
+					}
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine($"Shits fucked yo\n(Failed to write to error log: {ex.Message})");
 			}
 		}
 	}

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using React.AspNet;
 
 namespace KidesServer
 {
@@ -32,6 +33,8 @@ namespace KidesServer
 				options.MinimumSameSitePolicy = SameSiteMode.None;
 			});
 
+			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+			services.AddReact();
 
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 			services.AddMvc().AddJsonOptions(opt =>
@@ -57,6 +60,7 @@ namespace KidesServer
 			AppDomain.CurrentDomain.SetData("DataDirectory", System.IO.Path.Combine(env.ContentRootPath, "App_Data"));
 
 			app.UseHttpsRedirection();
+			app.UseReact(config => { });
 			app.UseStaticFiles();
 			app.UseCookiePolicy();
 
@@ -64,7 +68,10 @@ namespace KidesServer
 			{
 				routes.MapRoute(
 					name: "default",
-					template: "{controller=Home}/{action=Root}/{id?}");
+					template: "{controller=Home}/{action=Root}");
+				routes.MapRoute(
+					name: "symphogames",
+					template: "Symphogames/{controller=Home}/{action=Symphogames}");
 				routes.MapRoute(
 					name: "KidesApi",
 					template: "api/{controller}/{id}");

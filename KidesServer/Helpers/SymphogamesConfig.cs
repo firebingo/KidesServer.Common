@@ -1,22 +1,25 @@
 ﻿using KidesServer.Models;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace KidesServer
+namespace KidesServer.Helpers
 {
-	public static class AppConfig
+	public class SymphogamesConfig
 	{
 		public static string folderLocation = string.Empty;
 		private static ConfigModel _config;
 
-		static AppConfig()
+		static SymphogamesConfig()
 		{
 			try
 			{
 				folderLocation = AppDomain.CurrentDomain.GetData("DataDirectory").ToString();
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				ErrorLog.WriteLog(e.Message);
 			}
@@ -29,7 +32,7 @@ namespace KidesServer
 				try
 				{
 					if (_config == null)
-						_config = JsonConvert.DeserializeObject<ConfigModel>(File.ReadAllText($"{folderLocation}\\Config.json"));
+						_config = JsonConvert.DeserializeObject<ConfigModel>(File.ReadAllText($"{folderLocation}\\SGConfig.json"));
 					return _config;
 				}
 				catch (Exception e)

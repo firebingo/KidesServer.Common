@@ -5,46 +5,46 @@ namespace KidesServer.Helpers
 {
 	public static class GeneralCache
 	{
-		private static Dictionary<string, Dictionary<string, CacheObject>> ObjectCache = new Dictionary<string, Dictionary<string, CacheObject>>();
-		private static object dictLock = new object();
+		private static Dictionary<string, Dictionary<string, CacheObject>> _objectCache = new Dictionary<string, Dictionary<string, CacheObject>>();
+		private static readonly object _dictLock = new object();
 
-		public static void newCacheObject(string cache, string hash, object toCache, TimeSpan expireTime)
+		public static void NewCacheObject(string cache, string hash, object toCache, TimeSpan expireTime)
 		{
 			try
 			{
-				lock (dictLock)
+				lock (_dictLock)
 				{
-					if (!ObjectCache.ContainsKey(cache))
-						ObjectCache.Add(cache, new Dictionary<string, CacheObject>());
+					if (!_objectCache.ContainsKey(cache))
+						_objectCache.Add(cache, new Dictionary<string, CacheObject>());
 
 					CacheObject cacheObject = new CacheObject(toCache, expireTime);
-					if (ObjectCache[cache].ContainsKey(hash))
-						ObjectCache[cache].Remove(hash);
-					ObjectCache[cache].Add(hash, cacheObject);
+					if (_objectCache[cache].ContainsKey(hash))
+						_objectCache[cache].Remove(hash);
+					_objectCache[cache].Add(hash, cacheObject);
 				}
 			}
 			catch (Exception e)
 			{
-				ErrorLog.writeLog(e.Message);
+				ErrorLog.WriteLog(e.Message);
 			}
 		}
 
-		public static object getCacheObject(string cache, string hash)
+		public static object GetCacheObject(string cache, string hash)
 		{
 			try
 			{
-				lock (dictLock)
+				lock (_dictLock)
 				{
-					if (!ObjectCache.ContainsKey(cache))
+					if (!_objectCache.ContainsKey(cache))
 						return null;
-					if (ObjectCache[cache].ContainsKey(hash))
+					if (_objectCache[cache].ContainsKey(hash))
 					{
-						var cachedObject = ObjectCache[cache][hash];
-						var expired = cachedObject.isExpired();
+						var cachedObject = _objectCache[cache][hash];
+						var expired = cachedObject.IsExpired();
 						if (!expired)
-							return ObjectCache[cache][hash].CachedObject;
+							return _objectCache[cache][hash].CachedObject;
 						else
-							ObjectCache[cache].Remove(hash);
+							_objectCache[cache].Remove(hash);
 
 					}
 					return null;
@@ -52,32 +52,32 @@ namespace KidesServer.Helpers
 			}
 			catch (Exception e)
 			{
-				ErrorLog.writeLog(e.Message);
+				ErrorLog.WriteLog(e.Message);
 				return null;
 			}
 		}
 
-		public static bool containsCacheObject(string cache, string hash)
+		public static bool ContainsCacheObject(string cache, string hash)
 		{
 			try
 			{
-				lock (dictLock)
+				lock (_dictLock)
 				{
-					if (!ObjectCache.ContainsKey(cache))
+					if (!_objectCache.ContainsKey(cache))
 						return false;
-					if (!ObjectCache[cache].ContainsKey(hash))
+					if (!_objectCache[cache].ContainsKey(hash))
 						return false;
-					var expired = ObjectCache[cache][hash].isExpired();
+					var expired = _objectCache[cache][hash].IsExpired();
 					if (!expired)
 						return true;
 					else
-						ObjectCache[cache].Remove(hash);
+						_objectCache[cache].Remove(hash);
 					return false;
 				}
 			}
 			catch (Exception e)
 			{
-				ErrorLog.writeLog(e.Message);
+				ErrorLog.WriteLog(e.Message);
 				return false;
 			}
 		}
@@ -85,20 +85,20 @@ namespace KidesServer.Helpers
 
 	public class CacheObject
 	{
-		private DateTime timeCached;
-		private TimeSpan expireTime;
+		private readonly DateTime _timeCached;
+		private TimeSpan _expireTime;
 		public object CachedObject;
 
 		public CacheObject(object toCache, TimeSpan expireTime)
 		{
-			timeCached = DateTime.Now;
-			this.expireTime = expireTime;
+			_timeCached = DateTime.Now;
+			_expireTime = expireTime;
 			CachedObject = toCache;
 		}
 
-		public bool isExpired()
+		public bool IsExpired()
 		{
-			if (timeCached + expireTime < DateTime.Now)
+			if (_timeCached + _expireTime < DateTime.Now)
 				return true;
 			return false;
 		}

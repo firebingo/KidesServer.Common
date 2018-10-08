@@ -6,6 +6,8 @@
 
   <ItemGroup>
     <Content Remove="App_Data\Config.json" />
+    <Content Remove="wwwroot\symphogames-react\package-lock.json" />
+    <Content Remove="wwwroot\symphogames-react\package.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,10 +20,13 @@
 
   <ItemGroup>
     <Folder Include="Views\Shared\" />
+    <Folder Include="wwwroot\symphogames-react\src\js\" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="App_Data\Config.json" />
+    <None Include="wwwroot\symphogames-react\package-lock.json" />
+    <None Include="wwwroot\symphogames-react\package.json" />
   </ItemGroup>
 
 </Project>

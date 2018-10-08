@@ -1,5 +1,4 @@
-﻿
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 
 namespace KidesServer.Models
 {
@@ -7,6 +6,16 @@ namespace KidesServer.Models
 	{
 		public bool success;
 		public string message;
+	}
+
+	public class UIntResult : BaseResult
+	{
+		public ulong value;
+	}
+
+	public class ULongResult : BaseResult
+	{
+		public ulong value;
 	}
 
 	public class ConfigModel
@@ -36,5 +45,10 @@ namespace KidesServer.Models
 				return _connectionString;
 			}
 		}
+	}
+
+	public class SymphogamesModel
+	{
+		public DBConfigModel DBConfig;
 	}
 }

@@ -31,7 +31,7 @@ namespace KidesServer.Controllers
 			}
 			catch (Exception e)
 			{
-				ErrorLog.writeLog(e.Message);
+				ErrorLog.WriteLog(e.Message);
 				return StatusCode(500, e.Message);
 			}
 			if (userInfo != null && userInfo.data != null)
