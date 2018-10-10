@@ -20,7 +20,6 @@
 
   <ItemGroup>
     <Folder Include="Views\Shared\" />
-    <Folder Include="wwwroot\symphogames-react\src\js\" />
   </ItemGroup>
 
   <ItemGroup>

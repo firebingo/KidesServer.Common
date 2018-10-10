@@ -47,8 +47,9 @@ namespace KidesServer.Models
 		}
 	}
 
-	public class SymphogamesModel
+	public class SymphogamesConfigModel
 	{
+		public string HashPepper;
 		public DBConfigModel DBConfig;
 	}
 }

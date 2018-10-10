@@ -1,4 +1,7 @@
-﻿namespace KidesServer.Models
+﻿using Newtonsoft.Json;
+using System;
+
+namespace KidesServer.Models
 {
 	public class Vector2<T>
 	{
@@ -19,6 +22,7 @@
 			_y = i.Y;
 		}
 
+		[JsonConstructor]
 		public Vector2(T x, T y)
 		{
 			_x = x;

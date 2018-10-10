@@ -1,5 +1,7 @@
-﻿using KidesServer.Models;
+﻿using KidesServer.Helpers;
+using KidesServer.Models;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -35,18 +37,23 @@ namespace KidesServer.Symphogames
 
 	public class SGame
 	{
-		public Guid Id;
+		public readonly uint Id;
+		public readonly string Name;
 		public readonly SMap Map;
-		public Dictionary<uint, SDistrict> Districts;
-		public List<STurn> Turns;
-		public int CurrentTurn { get; set; }
-		public CurrentTime TimeOfDay { get; set; }
+		public readonly Dictionary<uint, SDistrict> Districts;
+		public readonly List<STurn> Turns;
+		public int CurrentTurn;
+		public CurrentTime TimeOfDay;
+		public bool Completed { get; private set; }
+		public bool IsPastViewable { get; private set; } //Whether or not the game can be replayed in the interface later
 
-		public SGame(int width, int height)
+		public SGame(uint id, string iN, int width, int height)
 		{
-			Id = Guid.NewGuid();
+			Id = id;
+			Name = iN;
 			Map = new SMap(new Vector2<int>(width, height));
 			Districts = new Dictionary<uint, SDistrict>();
+			Turns = new List<STurn>();
 			CurrentTurn = 0;
 			TimeOfDay = CurrentTime.Day;
 		}
@@ -54,6 +61,69 @@ namespace KidesServer.Symphogames
 		public void AddDistrict(SDistrict dis)
 		{
 			Districts.Add(dis.Id, dis);
+		}
+
+		public Dictionary<uint, SGamePlayer> GetPlayers()
+		{
+			var ret = new Dictionary<uint, SGamePlayer>();
+			foreach (var d in Districts)
+			{
+				foreach (var p in d.Value.Players)
+					ret.Add(p.Key, p.Value);
+			}
+			return ret;
+		}
+
+		public SGamePlayer GetPlayerById(uint id)
+		{
+			foreach (var d in Districts)
+			{
+				if (d.Value.Players.ContainsKey(id))
+					return d.Value.Players[id];
+			}
+			return null;
+		}
+
+		public Dictionary<uint, SGamePlayer> GetDeadPlayers()
+		{
+			var ret = new Dictionary<uint, SGamePlayer>();
+			foreach (var d in Districts)
+			{
+				foreach (var p in d.Value.Players)
+					if(p.Value.State == SPlayerState.Dead)
+						ret.Add(p.Key, p.Value);
+			}
+			return ret;
+		}
+
+		public Dictionary<uint, SGamePlayer> GetPlayersAtGrid(Vector2<int> position)
+		{
+			var ret = new Dictionary<uint, SGamePlayer>();
+			foreach (var d in Districts)
+			{
+				foreach (var p in d.Value.Players)
+					if (p.Value.Position == position)
+						ret.Add(p.Key, p.Value);
+			}
+			return ret;
+		}
+
+		public Dictionary<uint, SGamePlayer> GetNearPlayers(Vector2<int> position, int range)
+		{
+			var ret = new Dictionary<uint, SGamePlayer>();
+			foreach (var d in Districts)
+			{
+				foreach (var p in d.Value.Players)
+					if (MathHelpers.VectorDistance(position, p.Value.Position) < range)
+						ret.Add(p.Key, p.Value);
+			}
+			return ret;
+		}
+
+		public void FinishGame(bool canView)
+		{
+			Completed = true;
+			IsPastViewable = canView;
 		}
 	}
 
@@ -84,6 +154,11 @@ namespace KidesServer.Symphogames
 
 	public class STurn
 	{
-		public Dictionary<uint, SAction> Actions;
+		public ConcurrentDictionary<uint, SAction> Actions;
+
+		public STurn()
+		{
+			Actions = new ConcurrentDictionary<uint, SAction>();
+		}
 	}
 }

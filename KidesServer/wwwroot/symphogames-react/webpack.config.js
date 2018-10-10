@@ -18,13 +18,21 @@ module.exports = {
 				use: {
 					loader: "babel-loader",
 					options: {
-						presets: ["@babel/preset-env", "@babel/preset-react"]
+						presets: [
+							["@babel/preset-env", {
+								"targets": {
+									"safari": "10.1",
+									"firefox": "60",
+									"chrome": "65"
+								}
+							}],
+							"@babel/preset-react"]
 					}
 				}
 			},
 			{
 				test: /\.less$/,
-
+				exclude: /node_modules/,
 				use: [{
 					loader: MiniCssExtractPlugin.loader,
 				}, {

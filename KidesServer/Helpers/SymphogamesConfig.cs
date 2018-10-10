@@ -11,7 +11,7 @@ namespace KidesServer.Helpers
 	public class SymphogamesConfig
 	{
 		public static string folderLocation = string.Empty;
-		private static ConfigModel _config;
+		private static SymphogamesConfigModel _config;
 
 		static SymphogamesConfig()
 		{
@@ -25,14 +25,14 @@ namespace KidesServer.Helpers
 			}
 		}
 
-		public static ConfigModel Config
+		public static SymphogamesConfigModel Config
 		{
 			get
 			{
 				try
 				{
 					if (_config == null)
-						_config = JsonConvert.DeserializeObject<ConfigModel>(File.ReadAllText($"{folderLocation}\\SGConfig.json"));
+						_config = JsonConvert.DeserializeObject<SymphogamesConfigModel>(File.ReadAllText($"{folderLocation}\\SGConfig.json"));
 					return _config;
 				}
 				catch (Exception e)
