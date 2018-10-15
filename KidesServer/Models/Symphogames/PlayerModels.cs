@@ -22,6 +22,7 @@ namespace KidesServer.Symphogames
 		public string Name { get; private set; }
 		private string Password;
 		private readonly string Salt;
+		public string AvatarName;
 		public readonly SPlayerHistory History;
 
 		public SPlayer(uint id, string iN)
@@ -29,6 +30,7 @@ namespace KidesServer.Symphogames
 			Id = id;
 			Name = iN;
 			Salt = Guid.NewGuid().ToString("n");
+			AvatarName = "default";
 		}
 
 		public Task ChangeName(string iN)

@@ -35,6 +35,12 @@ namespace KidesServer.Symphogames
 		Wait
 	}
 
+	public enum SImageType
+	{
+		Map,
+		Avatar
+	}
+
 	public class SGame
 	{
 		public readonly uint Id;
@@ -130,6 +136,7 @@ namespace KidesServer.Symphogames
 	public class SMap
 	{
 		public Vector2<int> Size;
+		public string MapImage;
 		public SMapSpace[,] Map;
 
 		public SMap(Vector2<int> size)

@@ -1,4 +1,5 @@
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
 	entry: './src/index.jsx',
@@ -8,7 +9,13 @@ module.exports = {
 			// both options are optional
 			filename: "[name].css",
 			chunkFilename: "[id].css"
-		})
+		}),
+		new CopyWebpackPlugin([{
+			from: "src/translations/*.json",
+			to: "translations",
+			toType: "dir",
+			flatten: true
+		}], { debug: false })
 	],
 	module: {
 		rules: [
@@ -23,7 +30,8 @@ module.exports = {
 								"targets": {
 									"safari": "10.1",
 									"firefox": "60",
-									"chrome": "65"
+									"chrome": "65",
+									"edge": "14"
 								}
 							}],
 							"@babel/preset-react"]

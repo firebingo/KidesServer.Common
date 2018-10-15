@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace KidesServer.Controllers
 {
-	[Route("api/v1/discord")]
+	[Route("api/v1/symphogames")]
 	[ApiController]
 	public class SymphogamesController : ControllerBase
 	{
@@ -21,7 +21,7 @@ namespace KidesServer.Controllers
 			if (result.success)
 				return Ok(result);
 			else
-				return BadRequest(result.message);
+				return BadRequest(result);
 		}
 
 		//[Returns(typeof(UIntResult))]
@@ -45,19 +45,48 @@ namespace KidesServer.Controllers
 			if (result.success)
 				return Ok(result);
 			else
-				return BadRequest(result.message);
+				return BadRequest(result);
 		}
 
-		[Returns(typeof(CurrentGamePlayerInfo))]
-		[HttpGet, Route("current-player-game-info")]
-		public async Task<IActionResult> GetCurrentPlayerInfo([FromQuery]uint gameId, [FromQuery]uint userId, [FromQuery]string accessguid)
+		[Returns(typeof(JoinGameResult))]
+		[HttpGet, Route("join-game")]
+		public async Task<IActionResult> Join([FromQuery]uint gameId, [FromQuery]uint playerId)
 		{
-			var result = await GamesLogic.GetCurrentPlayerInfo(gameId, userId, accessguid);
+			var result = await GamesLogic.UserJoinGame(gameId, playerId);
 
 			if (result.success)
 				return Ok(result);
 			else
-				return BadRequest(result.message);
+				return BadRequest(result);
+		}
+
+		[Returns(typeof(CurrentGamePlayerInfo))]
+		[HttpGet, Route("current-player-game-info")]
+		public async Task<IActionResult> GetCurrentPlayerInfo([FromQuery]uint gameId, [FromQuery]uint playerId, [FromQuery]string accessguid)
+		{
+			var result = await GamesLogic.GetCurrentPlayerInfo(gameId, playerId, accessguid);
+
+			if (result.success)
+				return Ok(result);
+			else
+				return BadRequest(result);
+		}
+
+		[Returns(typeof(PhysicalFileResult))]
+		[HttpGet, Route("image")]
+		public async Task<IActionResult> GetImage([FromQuery]SImageType type, [FromQuery]string name)
+		{
+			var ext = ".png";
+			var mime = "image/png";
+			if (type == SImageType.Map)
+			{
+				ext = ".jpg";
+				mime = "image/jpeg";
+			}
+			var path = $"{AppDomain.CurrentDomain.GetData("DataDirectory").ToString()}\\Images\\Symphogames\\{name}{ext}";
+			if(!System.IO.File.Exists(path))
+				return BadRequest(new BaseResult { success = false, message = "FILE_NOT_EXIST" });
+			return PhysicalFile(path, mime);
 		}
 	}
 }

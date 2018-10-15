@@ -8,11 +8,26 @@ using System.Threading.Tasks;
 namespace KidesServer.Symphogames
 {
 	[Serializable]
+	public class JoinGameResult : BaseResult
+	{
+		public uint GameId;
+		public uint PlayerId;
+		public string AccessGuid;
+	}
+
+	[Serializable]
+	public class CurrentGamePlayers : BaseResult
+	{
+		public List<SPlayerInfo> Players;
+	}
+
+	[Serializable]
 	public class CurrentGamePlayerInfo : BaseResult
 	{
 		public SGameInfo GameInfo;
 		public SMapInfo MapInfo;
 		public SPlayersInfo PlayerInfo;
+		public List<SActionInfo> ActionInfo;
 	}
 
 	[Serializable]
@@ -33,6 +48,7 @@ namespace KidesServer.Symphogames
 	[Serializable]
 	public class SPlayersInfo
 	{
+		public SPlayerInfo ThisPlayer;
 		public List<SPlayerInfo> DeadPlayers;
 		public List<SPlayerInfo> Players;
 	}
@@ -46,5 +62,15 @@ namespace KidesServer.Symphogames
 		public Vector2<int> Position;
 		public SPlayerState State;
 		public int Kills;
+		public double Range;
+	}
+
+	[Serializable]
+	public class SActionInfo
+	{
+		public SActionType Type;
+		public SDirection? Direction;
+		public uint? Target;
+		public string ActionName;
 	}
 }

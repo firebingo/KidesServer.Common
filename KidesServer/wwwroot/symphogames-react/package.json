@@ -15,7 +15,11 @@
 		"mini-css-extract-plugin": "^0.4.3",
 		"webpack": "^4.20.2",
 		"webpack-cli": "^3.1.2",
-		"webpack-dev-server": "^3.1.9"
+		"webpack-dev-server": "^3.1.9",
+		"react-router": "4.3.1",
+		"react-router-dom": "4.3.1",
+		"react-localize-redux": "3.4.1",
+		"copy-webpack-plugin": "4.5.3"
 	},
 	"scripts": {
 		"dev": "webpack --mode development",

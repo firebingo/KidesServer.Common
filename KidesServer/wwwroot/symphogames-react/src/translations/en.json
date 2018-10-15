@@ -1,0 +1,22 @@
+{
+	"PLAYER_ID": "Player Id",
+	"GAME_ID": "Game Id",
+	"JOIN": "Join",
+	"USER_NOT_EXIST": "Could not find user with Id ${id}",
+	"GAME_NOT_EXIST": "Could not find game with Id ${id}",
+	"INVALID_ACCESS": "Invalid Access",
+	"DAY": "Day",
+	"NIGHT": "Night",
+	"NORTH": "North",
+	"NORTHEAST": "North East",
+	"EAST": "East",
+	"SOUTHEAST": "South East",
+	"SOUTH": "South",
+	"SOUTHWEST": "South West",
+	"WEST": "West",
+	"NORTHWEST": "North West",
+	"MOVE": "Move",
+	"ATTACK": "Attack",
+	"DEFEND": "Defend",
+	"WAIT": "Wait"
+}

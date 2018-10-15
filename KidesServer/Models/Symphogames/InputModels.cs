@@ -9,6 +9,7 @@ namespace KidesServer.Symphogames
 	public class StartGameInput
 	{
 		public string GameName;
+		public string MapImage;
 		public Vector2<int> Size;
 		public List<DistrictInput> Districts;
 	}

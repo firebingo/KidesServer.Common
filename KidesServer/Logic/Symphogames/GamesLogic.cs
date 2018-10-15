@@ -14,7 +14,7 @@ namespace KidesServer.Symphogames
 			{
 				var res = new UIntResult();
 				var id = await GamesDb.GetNextPlayerId();
-				if (SymphogamesStorage.Players[id] != null)
+				if (SymphogamesStorage.Players.ContainsKey(id))
 					return new UIntResult { message = "USER_EXISTS" };
 
 				var p = new SPlayer(id, playerName);
@@ -38,7 +38,7 @@ namespace KidesServer.Symphogames
 			{
 				var res = new UIntResult();
 				var id = await GamesDb.GetNextGameId();
-				res = await SymphogamesStorage.StartGame(id, input.GameName, input.Size.X, input.Size.Y, input.Districts);
+				res = await SymphogamesStorage.StartGame(id, input.GameName, input.MapImage, input.Size.X, input.Size.Y, input.Districts);
 				return res;
 			}
 			catch (Exception ex)
@@ -48,12 +48,25 @@ namespace KidesServer.Symphogames
 			}
 		}
 
-		public static async Task<CurrentGamePlayerInfo> GetCurrentPlayerInfo(uint gameId, uint userId, string accessguid)
+		public static async Task<JoinGameResult> UserJoinGame(uint gameId, uint playerId)
 		{
 			try
 			{
-				var res = await SymphogamesStorage.GetCurrentPlayerInfo(gameId, userId, accessguid);
+				var res = await SymphogamesStorage.GetPlayerAccessData(gameId, playerId);
+				return res;
+			}
+			catch (Exception ex)
+			{
+				ErrorLog.WriteError(ex);
+				return new JoinGameResult { message = "EXCEPTION" };
+			}
+		}
 
+		public static async Task<CurrentGamePlayerInfo> GetCurrentPlayerInfo(uint gameId, uint playerId, string accessguid)
+		{
+			try
+			{
+				var res = await SymphogamesStorage.GetCurrentPlayerInfo(gameId, playerId, accessguid);
 				return res;
 			}
 			catch(Exception ex)

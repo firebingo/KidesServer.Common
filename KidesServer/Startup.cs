@@ -71,7 +71,8 @@ namespace KidesServer
 					template: "{controller=Home}/{action=Root}");
 				routes.MapRoute(
 					name: "symphogames",
-					template: "Symphogames/{controller=Home}/{action=Symphogames}");
+					template: "Symphogames/{*pageInfo}",
+					defaults: new { controller = "Home", action = "Symphogames" });
 				routes.MapRoute(
 					name: "KidesApi",
 					template: "api/{controller}/{id}");
