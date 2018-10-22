@@ -18,23 +18,23 @@ namespace KidesServer.Common
 		public ulong value;
 	}
 
-    public class DBConfigModel
-    {
-        public string userName;
-        public string password;
-        public string address;
-        public string port;
-        public string schemaName;
-        private string _connectionString;
-        [JsonIgnore]
-        public string ConnectionString
-        {
-            get
-            {
-                if (_connectionString == null)
-                    _connectionString = $"server={address};port={port};uid={userName};pwd={password};database={schemaName};charset=utf8mb4;Allow User Variables=True;SslMode=none";
-                return _connectionString;
-            }
-        }
-    }
+	public class DBConfigModel
+	{
+		public string userName;
+		public string password;
+		public string address;
+		public string port;
+		public string schemaName;
+		private string _connectionString;
+		[JsonIgnore]
+		public string ConnectionString
+		{
+			get
+			{
+				if (_connectionString == null)
+					_connectionString = $"server={address};port={port};uid={userName};pwd={password};database={schemaName};charset=utf8mb4;Allow User Variables=True;SslMode=none";
+				return _connectionString;
+			}
+		}
+	}
 }

@@ -15,10 +15,10 @@
     <PackageReference Include="MySql.Data" Version="8.0.12" />
     <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="React.AspNet" Version="4.0.0-beta3" />
+    <PackageReference Include="ZNetCS.AspNetCore.Authentication.Basic" Version="3.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Logic\Symphogames\" />
     <Folder Include="Views\Shared\" />
   </ItemGroup>
 

@@ -1,5 +1,4 @@
 ﻿using Newtonsoft.Json;
-using System;
 
 namespace KidesServer.Common
 {
@@ -57,7 +56,7 @@ namespace KidesServer.Common
 
 		public override bool Equals(object obj)
 		{
-			if(obj is Vector2<T> x)
+			if (obj is Vector2<T> x)
 				return x == this;
 			return false;
 		}

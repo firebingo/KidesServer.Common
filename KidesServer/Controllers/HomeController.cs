@@ -15,11 +15,6 @@ namespace KidesServer.Controllers
 			return View();
 		}
 
-		public IActionResult Symphogames()
-		{
-			return View("symphogames-react");
-		}
-
 		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 		public IActionResult Error()
 		{
