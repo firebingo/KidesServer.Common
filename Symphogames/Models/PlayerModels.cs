@@ -1,5 +1,5 @@
-﻿using KidesServer.Helpers;
-using KidesServer.Models;
+﻿using KidesServer.Common;
+using Symphogames.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace KidesServer.Symphogames
+namespace Symphogames.Models
 {
 	public enum SPlayerState
 	{

@@ -1,6 +1,7 @@
-﻿using KidesServer.Models;
-using KidesServer.Symphogames;
+﻿using KidesServer.Common;
 using Microsoft.AspNetCore.Mvc;
+using Symphogames.Logic;
+using Symphogames.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,7 +75,7 @@ namespace KidesServer.Controllers
 
 		[Returns(typeof(PhysicalFileResult))]
 		[HttpGet, Route("image")]
-		public async Task<IActionResult> GetImage([FromQuery]SImageType type, [FromQuery]string name)
+		public IActionResult GetImage([FromQuery]SImageType type, [FromQuery]string name)
 		{
 			var path = "Avatars";
 			var ext = ".png";

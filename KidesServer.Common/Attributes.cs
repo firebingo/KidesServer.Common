@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace KidesServer.Models
+namespace KidesServer.Common
 {
 	[AttributeUsage(AttributeTargets.Method, Inherited = false)]
 	public sealed class ReturnsAttribute : Attribute

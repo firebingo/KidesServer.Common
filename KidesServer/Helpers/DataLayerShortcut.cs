@@ -4,6 +4,7 @@ using System.Data;
 using KidesServer.Models;
 using System.Threading.Tasks;
 using System.Data.Common;
+using KidesServer.Common;
 
 namespace KidesServer.DataBase
 {

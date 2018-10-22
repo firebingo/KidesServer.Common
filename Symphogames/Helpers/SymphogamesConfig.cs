@@ -1,12 +1,12 @@
-﻿using KidesServer.Models;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
+using Symphogames.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace KidesServer.Helpers
+namespace Symphogames.Helpers
 {
 	public class SymphogamesConfig
 	{

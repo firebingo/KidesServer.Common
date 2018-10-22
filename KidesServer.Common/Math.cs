@@ -1,10 +1,9 @@
-﻿using KidesServer.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace KidesServer.Helpers
+namespace KidesServer.Common
 {
 	public static class MathHelpers
 	{

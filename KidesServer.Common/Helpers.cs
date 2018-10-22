@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace KidesServer.Helpers
+namespace KidesServer.Common
 {
 	public static class HelperFunctions
 	{

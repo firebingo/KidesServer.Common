@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using KidesServer.Models;
 using System.Net.Http.Headers;
 using System.IO;
+using KidesServer.Helpers;
 
 namespace KidesServer.Logic
 {

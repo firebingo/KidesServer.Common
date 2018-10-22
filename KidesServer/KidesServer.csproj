@@ -6,8 +6,6 @@
 
   <ItemGroup>
     <Content Remove="App_Data\Config.json" />
-    <Content Remove="wwwroot\symphogames-react\package-lock.json" />
-    <Content Remove="wwwroot\symphogames-react\package.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -15,17 +13,21 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Formatters.Json" Version="2.2.0-preview2-35157" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.1.1" />
     <PackageReference Include="MySql.Data" Version="8.0.12" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.2" />
     <PackageReference Include="React.AspNet" Version="4.0.0-beta3" />
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Logic\Symphogames\" />
     <Folder Include="Views\Shared\" />
   </ItemGroup>
 
   <ItemGroup>
     <None Include="App_Data\Config.json" />
-    <None Include="wwwroot\symphogames-react\package-lock.json" />
-    <None Include="wwwroot\symphogames-react\package.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\KidesServer.Common\KidesServer.Common.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,12 +1,11 @@
-﻿using KidesServer.Helpers;
-using KidesServer.Models;
+﻿using KidesServer.Common;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace KidesServer.Symphogames
+namespace Symphogames.Models
 {
 	public static class SymphogamesStorage
 	{

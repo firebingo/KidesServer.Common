@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 
-namespace KidesServer.Models
+namespace KidesServer.Common
 {
 	public class Vector2<T>
 	{

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 
-namespace KidesServer.Helpers
+namespace Symphogames.Helpers
 {
 	public static class ErrorLog
 	{

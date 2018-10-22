@@ -1,11 +1,11 @@
-﻿using KidesServer.Models;
-using KidesServer.Symphogames;
+﻿using Symphogames;
+using Symphogames.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace KidesServer.Symphogames
+namespace Symphogames.Logic
 {
 	public static class GamesDb
 	{

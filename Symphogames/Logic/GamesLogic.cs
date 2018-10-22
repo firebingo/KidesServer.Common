@@ -1,10 +1,12 @@
-﻿using KidesServer.Models;
+﻿using KidesServer.Common;
+using Symphogames.Helpers;
+using Symphogames.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace KidesServer.Symphogames
+namespace Symphogames.Logic
 {
 	public static class GamesLogic
 	{

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using KidesServer.Common;
+using System;
 using System.Collections.Generic;
 
 namespace KidesServer.Models
