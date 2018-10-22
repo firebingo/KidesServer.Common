@@ -58,6 +58,7 @@ namespace KidesServer.Symphogames
 	{
 		public uint Id;
 		public string Name;
+		public string Avatar;
 		public uint DistrictId;
 		public Vector2<int> Position;
 		public SPlayerState State;

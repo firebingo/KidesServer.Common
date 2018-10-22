@@ -102,6 +102,7 @@ namespace KidesServer.Symphogames
 				{
 					Id = gamePlayer.Player.Id,
 					Name = gamePlayer.Player.Name,
+					Avatar = gamePlayer.Player.AvatarUrl,
 					DistrictId = gamePlayer.DistrictId,
 					Position = gamePlayer.Position,
 					State = gamePlayer.State,
@@ -111,6 +112,7 @@ namespace KidesServer.Symphogames
 				DeadPlayers = deadPlayers.Select(x => new SPlayerInfo() {
 					Id = x.Value.Player.Id,
 					Name = x.Value.Player.Name,
+					Avatar = x.Value.Player.AvatarUrl,
 					DistrictId = x.Value.DistrictId,
 					Position = x.Value.Position,
 					State = x.Value.State,
@@ -121,6 +123,7 @@ namespace KidesServer.Symphogames
 				{
 					Id = x.Value.Player.Id,
 					Name = x.Value.Player.Name,
+					Avatar = x.Value.Player.AvatarUrl,
 					DistrictId = x.Value.DistrictId,
 					Position = x.Value.Position,
 					State = x.Value.State,

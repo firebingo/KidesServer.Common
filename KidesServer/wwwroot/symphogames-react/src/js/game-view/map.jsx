@@ -32,24 +32,28 @@ export class Map extends React.Component {
 		const { gameInfo } = this.props;
 		const c = document.getElementById("gameMap");
 		const ctx = c.getContext("2d");
-		const size = gameInfo.mapInfo.map.size;
-		ctx.fillStyle = "white";
-		ctx.fillRect(0, 0, c.width, c.height);
-		ctx.strokeStyle = 'rgba(0, 0, 0, 128)';
-		for (let i = 0; i < size.x; ++i) {
-			ctx.beginPath();
-			const co = Math.ceil(1024 / size.x) * (i + 1);
-			ctx.moveTo(co, 0);
-			ctx.lineTo(co, 1024);
-			ctx.stroke();
-		}
-		for (let i = 0; i < size.y; ++i) {
-			ctx.beginPath();
-			const co = Math.ceil(1024 / size.y) * (i + 1);
-			ctx.moveTo(0, co);
-			ctx.lineTo(1024, co);
-			ctx.stroke();
-		}
+		var img = new Image(1024, 1024);
+		img.onload = () => {
+			const size = gameInfo.mapInfo.map.size;
+			ctx.drawImage(img, 0, 0); // Or at whatever offset you like
+			ctx.strokeStyle = 'rgba(0, 0, 0, 128)';
+			for (let i = 0; i < size.x; ++i) {
+				ctx.beginPath();
+				const co = Math.ceil(1024 / size.x) * (i + 1);
+				ctx.moveTo(co, 0);
+				ctx.lineTo(co, 1024);
+				ctx.stroke();
+			}
+			for (let i = 0; i < size.y; ++i) {
+				ctx.beginPath();
+				const co = Math.ceil(1024 / size.y) * (i + 1);
+				ctx.moveTo(0, co);
+				ctx.lineTo(1024, co);
+				ctx.stroke();
+			}
+			
+		};
+		img.src = gameInfo.mapInfo.map.mapImage;
 	}
 
 	onResize(ev) {

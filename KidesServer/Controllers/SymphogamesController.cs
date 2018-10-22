@@ -76,17 +76,19 @@ namespace KidesServer.Controllers
 		[HttpGet, Route("image")]
 		public async Task<IActionResult> GetImage([FromQuery]SImageType type, [FromQuery]string name)
 		{
+			var path = "Avatars";
 			var ext = ".png";
 			var mime = "image/png";
 			if (type == SImageType.Map)
 			{
 				ext = ".jpg";
 				mime = "image/jpeg";
+				path = "Maps";
 			}
-			var path = $"{AppDomain.CurrentDomain.GetData("DataDirectory").ToString()}\\Images\\Symphogames\\{name}{ext}";
-			if(!System.IO.File.Exists(path))
+			var filePath = $"{AppDomain.CurrentDomain.GetData("DataDirectory").ToString()}\\Images\\Symphogames\\{path}\\{name}{ext}";
+			if (!System.IO.File.Exists(filePath))
 				return BadRequest(new BaseResult { success = false, message = "FILE_NOT_EXIST" });
-			return PhysicalFile(path, mime);
+			return PhysicalFile(filePath, mime);
 		}
 	}
 }

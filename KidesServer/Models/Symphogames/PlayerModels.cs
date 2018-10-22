@@ -22,15 +22,27 @@ namespace KidesServer.Symphogames
 		public string Name { get; private set; }
 		private string Password;
 		private readonly string Salt;
-		public string AvatarName;
+		public string Avatar;
 		public readonly SPlayerHistory History;
+
+		public string AvatarUrl
+		{
+			get
+			{
+				if(Uri.TryCreate(Avatar, UriKind.Absolute, out var u))
+				{
+					return Avatar;
+				}
+				return $"/api/v1/symphogames/image?type=1&name={Avatar}";
+			}
+		}
 
 		public SPlayer(uint id, string iN)
 		{
 			Id = id;
 			Name = iN;
 			Salt = Guid.NewGuid().ToString("n");
-			AvatarName = "default";
+			Avatar = "default";
 		}
 
 		public Task ChangeName(string iN)
