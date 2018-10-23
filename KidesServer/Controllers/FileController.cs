@@ -136,6 +136,21 @@ namespace KidesServer.Controllers
 			return PhysicalFile(fullPath, contentType);
 		}
 
+		[HttpGet, Route("list-directory")]
+		[Authorize]
+		public ActionResult ListDirectory([FromQuery]string directory)
+		{
+			var fileUser = AppConfig.Config.FileAccess.People[User.Identity.Name];
+			if (fileUser == null || !fileUser.List)
+				return BadRequest(new BaseResult() { message = "USER_NO_PERMISSIONS", success = false });
+
+			var res = FileLogic.ListDirectory(fileUser, directory);
+
+			if (res.success)
+				return Ok(res);
+			return BadRequest(res);
+		}
+
 		private static Encoding GetEncoding(MultipartSection section)
 		{
 			var hasMediaTypeHeader = MediaTypeHeaderValue.TryParse(section.ContentType, out var mediaType);

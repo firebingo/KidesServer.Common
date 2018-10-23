@@ -16,4 +16,10 @@ namespace KidesServer.Models
 		public string FileName;
 		public string Url;
 	}
+
+	public class ListDirectoryResult : BaseResult
+	{
+		public List<string> Directories;
+		public List<string> Files;
+	}
 }

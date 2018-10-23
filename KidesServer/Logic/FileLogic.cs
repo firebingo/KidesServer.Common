@@ -1,4 +1,5 @@
-﻿using KidesServer.Models;
+﻿using KidesServer.Helpers;
+using KidesServer.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -43,7 +44,70 @@ namespace KidesServer.Logic
 			}
 			catch(Exception ex)
 			{
+				ErrorLog.WriteError(ex);
 				return new FileUploadResult()
+				{
+					success = false,
+					message = ex.Message
+				};
+			}
+		}
+
+		public static ListDirectoryResult ListDirectory(FileControllerPerson user, string directory)
+		{
+			try
+			{
+				var res = new ListDirectoryResult();
+
+				if (string.IsNullOrWhiteSpace(directory))
+					directory = "\\";
+
+				var hasPermission = false;
+				var hasSubPermission = false;
+
+				var dir = directory.ToLowerInvariant();
+				foreach (var d in user.Directories)
+				{
+					if (d == "*" || d == "\\*")
+					{
+						hasPermission = true;
+						hasSubPermission = true;
+						break;
+					}
+
+					var dl = d.ToLowerInvariant();
+					if (dl.EndsWith("*"))
+					{
+						if (dir.Contains(dl.TrimEnd('*').TrimEnd('\\')))
+						{
+							hasSubPermission = true;
+							hasPermission = true;
+						}
+					}
+					else
+					{
+						if (dir == dl)
+							hasPermission = true;
+					}
+				}
+
+				if (!hasPermission)
+					return new ListDirectoryResult() { success = false, message = "USER_NO_PERMISSIONS" };
+
+				var fullPath = $"{AppConfig.Config.FileAccess.RootDirectory}\\{directory}";
+				if (hasSubPermission)
+					res.Directories = Directory.EnumerateDirectories(fullPath).ToList();
+				else
+					res.Directories = new List<string>();
+
+				res.Files = Directory.EnumerateFiles(fullPath).ToList();
+
+				return res;
+			}
+			catch (Exception ex)
+			{
+				ErrorLog.WriteError(ex);
+				return new ListDirectoryResult()
 				{
 					success = false,
 					message = ex.Message
@@ -53,37 +117,45 @@ namespace KidesServer.Logic
 
 		public static bool CheckDirectoryPermission(FileControllerPerson user, string fileName)
 		{
-			if (user.Directories.Contains("*") || user.Directories.Contains("\\*"))
-				return true;
-
-			var splitPath = fileName.Split('\\').ToList();
-			if (splitPath.Count > 1)
+			try
 			{
-				splitPath.RemoveAt(splitPath.Count - 1);
-				var dir = string.Join('\\', splitPath).ToLowerInvariant();
-				foreach(var d in user.Directories)
+				if (user.Directories.Contains("*") || user.Directories.Contains("\\*"))
+					return true;
+
+				var splitPath = fileName.Split('\\').ToList();
+				if (splitPath.Count > 1)
 				{
-					var dl = d.ToLowerInvariant();
-					if (dl.EndsWith("*"))
+					splitPath.RemoveAt(splitPath.Count - 1);
+					var dir = string.Join('\\', splitPath).ToLowerInvariant();
+					foreach (var d in user.Directories)
 					{
-						if (dir.Contains(dl.TrimEnd('*').TrimEnd('\\')))
-							return true;
+						var dl = d.ToLowerInvariant();
+						if (dl.EndsWith("*"))
+						{
+							if (dir.Contains(dl.TrimEnd('*').TrimEnd('\\')))
+								return true;
+						}
+						else
+						{
+							if (dir == dl)
+								return true;
+						}
 					}
-					else
-					{
-						if (dir == dl)
-							return true;
-					}
+					return false;
 				}
+				else
+				{
+					if (!user.Directories.Contains("\\"))
+						return false;
+				}
+
+				return true;
+			}
+			catch(Exception ex)
+			{
+				ErrorLog.WriteError(ex);
 				return false;
 			}
-			else
-			{
-				if (!user.Directories.Contains("\\"))
-					return false;
-			}
-
-			return true;
 		}
 	}
 }
