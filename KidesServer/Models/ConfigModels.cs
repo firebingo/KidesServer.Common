@@ -15,13 +15,13 @@ namespace KidesServer.Models
 		public string baseMusicUrl;
 		public DBConfigModel DBConfig;
 		public string botId;
-		public FileControllerConfig FileAccess;
+		public FileControllerConfig FileAccess = new FileControllerConfig();
 	}
 
 	public class FileControllerConfig
 	{
 		public string RootDirectory;
-		public List<FileControllerPerson> PeopleList;
+		public List<FileControllerPerson> PeopleList = new List<FileControllerPerson>();
 		private Dictionary<string, FileControllerPerson> _people;
 		[JsonIgnore]
 		public Dictionary<string, FileControllerPerson> People
@@ -33,20 +33,28 @@ namespace KidesServer.Models
 				return _people;
 			}
 		}
+
+		public void CheckPasswordHashes()
+		{
+			foreach(var u in PeopleList)
+			{
+				u.CheckPasswordHash();
+			}
+		}
 	}
 
 	public class FileControllerPerson
 	{
-		public string Username;
-		public string Password;
-		public bool NeedsPasswordHashed;
-		public string HashSalt;
-		public bool Upload;
-		public bool Download;
-		public bool List;
-		public List<string> Directories;
+		public string Username = "";
+		public string Password = "";
+		public bool NeedsPasswordHashed = true;
+		public string HashSalt = "";
+		public bool Upload = false;
+		public bool Download = true;
+		public bool List = false;
+		public List<string> Directories = new List<string>();
 
-		public FileControllerPerson()
+		public void CheckPasswordHash()
 		{
 			if (string.IsNullOrWhiteSpace(HashSalt))
 				HashSalt = Guid.NewGuid().ToString("n");
@@ -69,6 +77,8 @@ namespace KidesServer.Models
 
 		public bool CheckPassword(string password)
 		{
+			if (Username.ToLowerInvariant() == "anon" && string.IsNullOrWhiteSpace(password))
+				return true;
 			StringBuilder builder = new StringBuilder();
 			using (var hash = SHA256.Create())
 			{
@@ -79,7 +89,7 @@ namespace KidesServer.Models
 					builder.Append(b.ToString("x2"));
 				}
 			}
-			if (password == builder.ToString())
+			if (Password == builder.ToString())
 				return true;
 			return false;
 		}

@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
-using React.AspNet;
 using ZNetCS.AspNetCore.Authentication.Basic;
 using ZNetCS.AspNetCore.Authentication.Basic.Events;
 
@@ -40,7 +39,6 @@ namespace KidesServer
 			});
 
 			services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-			services.AddReact();
 
 			services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 			services.AddMvc().AddJsonOptions(opt =>
@@ -69,21 +67,18 @@ namespace KidesServer
 								var claims = new List<Claim>
 								{
 									new Claim(ClaimTypes.Name,
-											  context.UserName,
+											  string.IsNullOrWhiteSpace(context.UserName) ? "anon" : context.UserName,
 											  context.Options.ClaimsIssuer)
 								};
 
-								var ticket = new AuthenticationTicket(
-								  new ClaimsPrincipal(new ClaimsIdentity(
-									claims,
-									BasicAuthenticationDefaults.AuthenticationScheme)),
-								  new AuthenticationProperties(),
-								  BasicAuthenticationDefaults.AuthenticationScheme);
+								var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, BasicAuthenticationDefaults.AuthenticationScheme));
+								context.Principal = principal;
 
-								return Task.FromResult(AuthenticateResult.Success(ticket));
+								return Task.CompletedTask;
 							}
 
-							return Task.FromResult(AuthenticateResult.Fail("Authentication failed."));
+							context.AuthenticationFailMessage = "Authentication failed.";
+							return Task.CompletedTask;
 						}
 					};
 				});

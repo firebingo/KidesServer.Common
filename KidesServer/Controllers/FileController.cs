@@ -13,6 +13,8 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using KidesServer.Models;
+using KidesServer.Logic;
 
 namespace KidesServer.Controllers
 {
@@ -23,27 +25,19 @@ namespace KidesServer.Controllers
 		private static readonly FormOptions _defaultFormOptions = new FormOptions();
 
 		[HttpPost, Route("upload-file")]
-		[DisableFormValueModelBinding]
+		//[DisableFormValueModelBinding]
 		[Authorize]
-		public async Task<IActionResult> UploadFile([FromBody] string fileName)
+		public async Task<IActionResult> UploadFile()
 		{
+			var fileName = Request.Headers["Filename"].ToString();
+			if (string.IsNullOrWhiteSpace(fileName))
+				return BadRequest(new BaseResult() { message = "INVALID_PARAMS", success = false }); ;
 			var fileUser = AppConfig.Config.FileAccess.People[User.Identity.Name];
 			if (fileUser == null || !fileUser.Upload)
-				return BadRequest(new BaseResult() { message = "User not allowed to upload", success = false });
+				return BadRequest(new BaseResult() { message = "USER_NO_PERMISSIONS", success = false });
 
-			var splitPath = fileName.Split('\\').ToList();
-			if (splitPath.Count > 1)
-			{
-				splitPath.RemoveAt(splitPath.Count - 1);
-				var dir = string.Join('\\', splitPath);
-				if(!fileUser.Directories.Contains(dir))
-					return BadRequest(new BaseResult() { message = "Invalid path", success = false });
-			}
-			else
-			{
-				if (!fileUser.Directories.Contains("\\"))
-					return BadRequest(new BaseResult() { message = "Invalid path", success = false });
-			}
+			if(!FileLogic.CheckDirectoryPermission(fileUser, fileName))
+				return BadRequest(new BaseResult() { message = "USER_NO_PERMISSIONS", success = false });
 
 			if (!MultipartRequestHelper.IsMultipartContentType(Request.ContentType))
 				return BadRequest(new BaseResult() { message = $"Expected a multipart request, but got {Request.ContentType}", success = false });
@@ -59,8 +53,7 @@ namespace KidesServer.Controllers
 			var section = await reader.ReadNextSectionAsync();
 			while (section != null)
 			{
-				ContentDispositionHeaderValue contentDisposition;
-				var hasContentDispositionHeader = ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out contentDisposition);
+				var hasContentDispositionHeader = ContentDispositionHeaderValue.TryParse(section.ContentDisposition, out var contentDisposition);
 
 				if (hasContentDispositionHeader)
 				{
@@ -110,19 +103,30 @@ namespace KidesServer.Controllers
 				section = await reader.ReadNextSectionAsync();
 			}
 
-			var res = Logic.FileLogic.UploadFile(fileUser, targetFilePath, fileName, $"{Request.Scheme}://{Request.Host}{Request.PathBase}");
+			var res = FileLogic.UploadFile(fileUser, targetFilePath, fileName, $"{Request.Scheme}://{Request.Host}{Request.PathBase}");
 			if (res.success)
 				return Ok(res);
 			return BadRequest(res);
 		}
 
-		[HttpGet, Route("get-file")]
+		[HttpGet, Route("get-file/{fileName}")]
 		[Authorize]
-		public async Task<IActionResult> GetFile([FromQuery]string fileName)
+		[AllowAnonymous]
+		public ActionResult GetFile(string fileName, [FromQuery]string directory)
 		{
-			var fileUser = AppConfig.Config.FileAccess.People[User.Identity.Name];
+			var userName = User.Identity.Name ?? "anon";
+			var fileUser = AppConfig.Config.FileAccess.People[userName];
 			if (fileUser == null || !fileUser.Download)
-				return BadRequest(new BaseResult() { message = "User not allowed to download", success = false });
+				return BadRequest(new BaseResult() { message = "USER_NO_PERMISSIONS", success = false });
+
+			if (string.IsNullOrWhiteSpace(fileName))
+				return BadRequest(new BaseResult() { success = false, message = "INVALID_PARAMS" });
+
+			if(!string.IsNullOrWhiteSpace(directory))
+				fileName = $"{directory}\\{fileName}";
+
+			if (!FileLogic.CheckDirectoryPermission(fileUser, fileName))
+				return BadRequest(new BaseResult() { message = "USER_NO_PERMISSIONS", success = false });
 
 			var fullPath = $"{AppConfig.Config.FileAccess.RootDirectory}\\{fileName}";
 			if(!System.IO.File.Exists(fullPath))
@@ -134,14 +138,12 @@ namespace KidesServer.Controllers
 
 		private static Encoding GetEncoding(MultipartSection section)
 		{
-			MediaTypeHeaderValue mediaType;
-			var hasMediaTypeHeader = MediaTypeHeaderValue.TryParse(section.ContentType, out mediaType);
+			var hasMediaTypeHeader = MediaTypeHeaderValue.TryParse(section.ContentType, out var mediaType);
 			// UTF-7 is insecure and should not be honored. UTF-8 will succeed in 
 			// most cases.
 			if (!hasMediaTypeHeader || Encoding.UTF7.Equals(mediaType.Encoding))
-			{
 				return Encoding.UTF8;
-			}
+
 			return mediaType.Encoding;
 		}
 	}

@@ -9,6 +9,7 @@ namespace KidesServer
 	public static class AppConfig
 	{
 		public static string folderLocation = string.Empty;
+		private static object cfgLock = new object();
 		private static ConfigModel _config;
 
 		static AppConfig()
@@ -17,7 +18,7 @@ namespace KidesServer
 			{
 				folderLocation = AppDomain.CurrentDomain.GetData("DataDirectory").ToString();
 			}
-			catch(Exception e)
+			catch (Exception e)
 			{
 				ErrorLog.WriteLog(e.Message);
 			}
@@ -29,8 +30,13 @@ namespace KidesServer
 			{
 				try
 				{
-					if (_config == null)
-						_config = JsonConvert.DeserializeObject<ConfigModel>(File.ReadAllText($"{folderLocation}\\Config.json"));
+					lock (cfgLock)
+					{
+						if (_config == null)
+							_config = JsonConvert.DeserializeObject<ConfigModel>(File.ReadAllText($"{folderLocation}\\Config.json"));
+					}
+					_config.FileAccess.CheckPasswordHashes();
+					SaveConfig();
 					return _config;
 				}
 				catch (Exception e)
@@ -38,6 +44,25 @@ namespace KidesServer
 					ErrorLog.WriteLog(e.Message);
 					return null;
 				}
+			}
+		}
+
+		public static void SaveConfig()
+		{
+			try
+			{
+				lock (cfgLock)
+				{
+					if (_config == null)
+						_config = JsonConvert.DeserializeObject<ConfigModel>(File.ReadAllText($"{folderLocation}\\Config.json"));
+					var cfg = JsonConvert.SerializeObject(_config, Formatting.Indented);
+					if(!string.IsNullOrWhiteSpace(cfg))
+						File.WriteAllText($"{folderLocation}\\Config.json", cfg);
+				}
+			}
+			catch (Exception e)
+			{
+				ErrorLog.WriteLog(e.Message);
 			}
 		}
 	}
