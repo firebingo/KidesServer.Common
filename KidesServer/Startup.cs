@@ -57,8 +57,13 @@ namespace KidesServer
 						OnValidatePrincipal = context =>
 						{
 							FileControllerPerson user = null;
-							if(!string.IsNullOrWhiteSpace(context.UserName))
+							if(!string.IsNullOrWhiteSpace(context.UserName) && AppConfig.Config.FileAccess.People.ContainsKey(context.UserName.ToLowerInvariant()))
 								user = AppConfig.Config.FileAccess.People[context.UserName.ToLowerInvariant()];
+							if (!AppConfig.Config.FileAccess.People.ContainsKey("anon"))
+							{
+								context.AuthenticationFailMessage = "Authentication failed.";
+								return Task.CompletedTask;
+							}
 							if (user == null)
 								user = AppConfig.Config.FileAccess.People["anon"];
 

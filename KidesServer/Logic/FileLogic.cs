@@ -1,4 +1,5 @@
-﻿using KidesServer.Helpers;
+﻿using KidesServer.Common;
+using KidesServer.Helpers;
 using KidesServer.Models;
 using System;
 using System.Collections.Generic;
@@ -42,7 +43,7 @@ namespace KidesServer.Logic
 				res.message = string.Empty;
 				return res;
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				ErrorLog.WriteError(ex);
 				return new FileUploadResult()
@@ -62,45 +63,20 @@ namespace KidesServer.Logic
 				if (string.IsNullOrWhiteSpace(directory))
 					directory = "\\";
 
-				var hasPermission = false;
-				var hasSubPermission = false;
+				var (permission, subPermission) = CheckDirectoryPermission(user, directory);
 
-				var dir = directory.ToLowerInvariant();
-				foreach (var d in user.Directories)
-				{
-					if (d == "*" || d == "\\*")
-					{
-						hasPermission = true;
-						hasSubPermission = true;
-						break;
-					}
-
-					var dl = d.ToLowerInvariant();
-					if (dl.EndsWith("*"))
-					{
-						if (dir.Contains(dl.TrimEnd('*').TrimEnd('\\')))
-						{
-							hasSubPermission = true;
-							hasPermission = true;
-						}
-					}
-					else
-					{
-						if (dir == dl)
-							hasPermission = true;
-					}
-				}
-
-				if (!hasPermission)
+				if (!permission)
 					return new ListDirectoryResult() { success = false, message = "USER_NO_PERMISSIONS" };
 
 				var fullPath = $"{AppConfig.Config.FileAccess.RootDirectory}\\{directory}";
-				if (hasSubPermission)
+				if (subPermission)
 					res.Directories = Directory.EnumerateDirectories(fullPath).Select(x => x.Replace(AppConfig.Config.FileAccess.RootDirectory, "").TrimStart('\\')).ToList();
 				else
 					res.Directories = new List<string>();
 
 				res.Files = Directory.EnumerateFiles(fullPath).Select(x => Path.GetFileName(x)).ToList();
+				res.success = true;
+				res.message = string.Empty;
 
 				return res;
 			}
@@ -115,7 +91,72 @@ namespace KidesServer.Logic
 			}
 		}
 
-		public static bool CheckDirectoryPermission(FileControllerPerson user, string fileName)
+		public static BaseResult DeleteFile(FileControllerPerson user, string fileName)
+		{
+			try
+			{
+				var res = new BaseResult();
+
+				if (!CheckFilePermission(user, fileName))
+				{
+					res.success = false;
+					res.message = string.Empty;
+				}
+
+				var fullPath = $"{AppConfig.Config.FileAccess.RootDirectory}\\{fileName}";
+				File.Delete(fullPath);
+
+				res.success = true;
+				res.message = string.Empty;
+
+				return res;
+			}
+			catch (Exception ex)
+			{
+				ErrorLog.WriteError(ex);
+				return new BaseResult()
+				{
+					success = false,
+					message = ex.Message
+				};
+			}
+		}
+
+		public static BaseResult DeleteDirectory(FileControllerPerson user, string directory)
+		{
+			try
+			{
+				var res = new BaseResult();
+
+				if (string.IsNullOrWhiteSpace(directory) || directory == "\\")
+					return new BaseResult() { success = false, message = "CANNOT_DELETE_ROOT" };
+
+				var (permission, subPermission) = CheckDirectoryPermission(user, directory);
+
+				//If we dont have sub folder permissions make sure this folder is a directly controllable directory
+				if (!permission || (!subPermission && !user.Directories.Contains(directory.ToLowerInvariant())))
+					return new BaseResult() { success = false, message = "USER_NO_PERMISSIONS" };
+
+				var fullPath = $"{AppConfig.Config.FileAccess.RootDirectory}\\{directory}";
+				Directory.Delete(fullPath, true);
+
+				res.success = true;
+				res.message = string.Empty;
+
+				return res;
+			}
+			catch (Exception ex)
+			{
+				ErrorLog.WriteError(ex);
+				return new BaseResult()
+				{
+					success = false,
+					message = ex.Message
+				};
+			}
+		}
+
+		public static bool CheckFilePermission(FileControllerPerson user, string fileName)
 		{
 			try
 			{
@@ -151,10 +192,46 @@ namespace KidesServer.Logic
 
 				return true;
 			}
-			catch(Exception ex)
+			catch (Exception ex)
 			{
 				ErrorLog.WriteError(ex);
 				return false;
+			}
+		}
+
+		public static (bool permission, bool subPermission) CheckDirectoryPermission(FileControllerPerson user, string directory)
+		{
+			directory = directory.ToLowerInvariant();
+			try
+			{
+				foreach (var d in user.Directories)
+				{
+					if (d == "*" || d == "\\*")
+					{
+						return (true, true);
+					}
+
+					var dl = d.ToLowerInvariant();
+					if (dl.EndsWith("*"))
+					{
+						if (directory.Contains(dl.TrimEnd('*').TrimEnd('\\')))
+						{
+							return (true, true);
+						}
+					}
+					else
+					{
+						if (directory == dl)
+							return (true, false);
+					}
+				}
+
+				return (false, false);
+			}
+			catch (Exception ex)
+			{
+				ErrorLog.WriteError(ex);
+				return (false, false);
 			}
 		}
 	}

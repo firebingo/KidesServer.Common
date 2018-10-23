@@ -52,6 +52,9 @@ namespace KidesServer.Models
 		public bool Upload = false;
 		public bool Download = true;
 		public bool List = false;
+		public bool Delete = false;
+		public bool DeleteDirectory = false;
+		public bool CreateDirectory = false;
 		public List<string> Directories = new List<string>();
 
 		public void CheckPasswordHash()

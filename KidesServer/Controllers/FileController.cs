@@ -36,7 +36,7 @@ namespace KidesServer.Controllers
 			if (fileUser == null || !fileUser.Upload)
 				return BadRequest(new BaseResult() { message = "USER_NO_PERMISSIONS", success = false });
 
-			if(!FileLogic.CheckDirectoryPermission(fileUser, fileName))
+			if(!FileLogic.CheckFilePermission(fileUser, fileName))
 				return BadRequest(new BaseResult() { message = "USER_NO_PERMISSIONS", success = false });
 
 			if (!MultipartRequestHelper.IsMultipartContentType(Request.ContentType))
@@ -125,7 +125,7 @@ namespace KidesServer.Controllers
 			if(!string.IsNullOrWhiteSpace(directory))
 				fileName = $"{directory}\\{fileName}";
 
-			if (!FileLogic.CheckDirectoryPermission(fileUser, fileName))
+			if (!FileLogic.CheckFilePermission(fileUser, fileName))
 				return BadRequest(new BaseResult() { message = "USER_NO_PERMISSIONS", success = false });
 
 			var fullPath = $"{AppConfig.Config.FileAccess.RootDirectory}\\{fileName}";
@@ -145,6 +145,36 @@ namespace KidesServer.Controllers
 				return BadRequest(new BaseResult() { message = "USER_NO_PERMISSIONS", success = false });
 
 			var res = FileLogic.ListDirectory(fileUser, directory);
+
+			if (res.success)
+				return Ok(res);
+			return BadRequest(res);
+		}
+
+		[HttpDelete, Route("delete-file")]
+		[Authorize]
+		public ActionResult DeleteFile([FromQuery]string fileName, [FromQuery]string directory)
+		{
+			var fileUser = AppConfig.Config.FileAccess.People[User.Identity.Name];
+			if (fileUser == null || !fileUser.Delete)
+				return BadRequest(new BaseResult() { message = "USER_NO_PERMISSIONS", success = false });
+
+			var res = FileLogic.DeleteFile(fileUser, $"{directory}\\{fileName}");
+
+			if (res.success)
+				return Ok(res);
+			return BadRequest(res);
+		}
+
+		[HttpDelete, Route("delete-directory")]
+		[Authorize]
+		public ActionResult DeleteDirectory([FromQuery]string directory)
+		{
+			var fileUser = AppConfig.Config.FileAccess.People[User.Identity.Name];
+			if (fileUser == null || !fileUser.DeleteDirectory)
+				return BadRequest(new BaseResult() { message = "USER_NO_PERMISSIONS", success = false });
+
+			var res = FileLogic.DeleteDirectory(fileUser, directory);
 
 			if (res.success)
 				return Ok(res);
