@@ -96,11 +96,11 @@ namespace KidesServer.Logic
 
 				var fullPath = $"{AppConfig.Config.FileAccess.RootDirectory}\\{directory}";
 				if (hasSubPermission)
-					res.Directories = Directory.EnumerateDirectories(fullPath).ToList();
+					res.Directories = Directory.EnumerateDirectories(fullPath).Select(x => x.Replace(AppConfig.Config.FileAccess.RootDirectory, "").TrimStart('\\')).ToList();
 				else
 					res.Directories = new List<string>();
 
-				res.Files = Directory.EnumerateFiles(fullPath).ToList();
+				res.Files = Directory.EnumerateFiles(fullPath).Select(x => Path.GetFileName(x)).ToList();
 
 				return res;
 			}
