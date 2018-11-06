@@ -1,8 +1,10 @@
+"use strict";
+const Path = require('path');
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-	entry: './src/index.jsx',
+	entry: './React/index.jsx',
 	plugins: [
 		new MiniCssExtractPlugin({
 			// Options similar to the same options in webpackOptions.output
@@ -11,7 +13,7 @@ module.exports = {
 			chunkFilename: "[id].css"
 		}),
 		new CopyWebpackPlugin([{
-			from: "src/translations/*.json",
+			from: "React/translations/*.json",
 			to: "translations",
 			toType: "dir",
 			flatten: true
@@ -21,7 +23,8 @@ module.exports = {
 		rules: [
 			{
 				test: /\.(js|jsx)$/,
-				exclude: /node_modules/,
+                exclude: /node_modules/,
+                include: /React/,
 				use: {
 					loader: "babel-loader",
 					options: {
@@ -40,7 +43,8 @@ module.exports = {
 			},
 			{
 				test: /\.less$/,
-				exclude: /node_modules/,
+                exclude: /node_modules/,
+                include: /React/,
 				use: [{
 					loader: MiniCssExtractPlugin.loader,
 				}, {
@@ -50,7 +54,8 @@ module.exports = {
 				}],
 			}
 		]
-	},
+    },
+    output: { path: Path.join(__dirname, './wwwroot/dist') },
 	resolve: {
 		extensions: ['.js', '.jsx']
 	}
