@@ -65,13 +65,14 @@ namespace KidesServer.Controllers
 		public async Task<IActionResult> GetWordCountList([FromQuery]int count, [FromQuery]ulong serverId, [FromQuery]int start, [FromQuery]DateTime? startDate = null, [FromQuery]WordCountSort sort = WordCountSort.count,
 			[FromQuery]bool isDesc = true, [FromQuery]string wordFilter = "", [FromQuery]bool includeTotal = false, [FromQuery]ulong? userFilterId = null, int lengthFloor = 0, bool englishOnly = false)
 		{
-			var input = new DiscordWordListInput(count, serverId, start, startDate, sort, isDesc, wordFilter, includeTotal, userFilterId, lengthFloor, englishOnly);
-			var result = await DiscordBotLogic.GetWordCountList(input);
-
-			if (result.success)
-				return Ok(result);
-			else
-				return BadRequest(result.message);
+			return await Task.Run(() => BadRequest("Disabled"));
+			//var input = new DiscordWordListInput(count, serverId, start, startDate, sort, isDesc, wordFilter, includeTotal, userFilterId, lengthFloor, englishOnly);
+			//var result = await DiscordBotLogic.GetWordCountList(input);
+			//
+			//if (result.success)
+			//	return Ok(result);
+			//else
+			//	return BadRequest(result.message);
 		}
 
 		[HttpGet, Route("stats")]
