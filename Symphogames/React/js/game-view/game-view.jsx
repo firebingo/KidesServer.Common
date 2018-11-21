@@ -1,7 +1,9 @@
 ﻿import React from "react";
 import ReactDOM from "react-dom";
 import { Redirect } from "react-router-dom";
+import { Translate } from "react-localize-redux";
 import { Map } from "./map.jsx";
+import { TurnControls } from "./turn-controls.jsx";
 
 export class GameView extends React.Component {
 	constructor(props) {
@@ -10,8 +12,10 @@ export class GameView extends React.Component {
 			error: null,
 			isLoaded: false,
 			gameInfo: {},
+			hasSubmittedTurn: false,
 			redirectToLogin: false
 		};
+		this.submitTurn = this.submitTurn.bind(this);
 	}
 
 	componentDidMount() {
@@ -45,16 +49,33 @@ export class GameView extends React.Component {
 			return <Redirect to="/" />;
 		} else {
 			if (error) {
-				return <div className="centered">Error: {error.message}</div>;
+				return (
+					<Translate>
+						{translate => (
+							<div className="centered">{translate('ERROR', { msg: error.message })}</div>
+						)}
+					</Translate>
+				);
 			} else if (!isLoaded) {
-				return <div className="centered">Loading...</div>
+				return (
+					<Translate>
+						{translate => (
+							<div className="centered">{translate('LOADING')}</div>
+						)}
+					</Translate>
+				);
 			} else {
 				return (
-					<div className="centered">
+					<div className="centered flex-column">
+						<TurnControls gameInfo={gameInfo} hasSubmittedTurn={hasSubmittedTurn} submitTurn={submitTurn} />
 						<Map gameInfo={gameInfo} />
 					</div>
 				);
 			}
 		}
+	}
+
+	submitTurn(e, action) {
+		hasSubmittedTurn = true;
 	}
 }

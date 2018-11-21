@@ -51,13 +51,12 @@ export class Map extends React.Component {
 				ctx.lineTo(1024, co);
 				ctx.stroke();
 			}
-			
 		};
 		img.src = gameInfo.mapInfo.map.mapImage;
 	}
 
 	onResize(ev) {
-		const newScale = (window.innerHeight / baseResolution.y); 
+		const newScale = (window.innerHeight / baseResolution.y);
 		const c = document.getElementById("gameMap");
 		c.style = `width: ${baseMapSize.x * newScale}; height: ${baseMapSize.y * newScale};`;
 	}

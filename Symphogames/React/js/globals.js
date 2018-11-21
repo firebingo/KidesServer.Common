@@ -3,23 +3,23 @@ export const baseMapSize = { x: 650, y: 650 }
 
 export const gameEnums = {
 	time: {
-		0: "DAY",
-		1: "NIGHT"
+		"DAY": 0,
+		"NIGHT": 1
 	},
 	direction: {
-		0: "NORTH",
-		1: "NORTHEAST",
-		2: "EAST",
-		3: "SOUTHEAST",
-		4: "SOUTH",
-		5: "SOUTHWEST",
-		6: "WEST",
-		7: "NORTHWEST"
+		"NORTH": 0,
+		"NORTHEAST": 1,
+		"EAST": 2,
+		"SOUTHEAST": 3,
+		"SOUTH": 4,
+		"SOUTHWEST": 5,
+		"WEST": 6,
+		"NORTHWEST": 7
 	},
 	action: {
-		0: "MOVE",
-		1: "ATTACK",
-		2: "DEFEND",
-		3: "WAIT"
+		"MOVE": 0,
+		"ATTACK": 1,
+		"DEFEND": 2,
+		"WAIT": 3
 	}
 }

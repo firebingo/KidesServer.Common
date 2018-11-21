@@ -20,9 +20,9 @@ export class IndexView extends React.Component {
 	render() {
 		const { userIdInput, gameIdInput, error, redirectToGame } = this.state;
 		const errorSplit = (error && error.message) ? error.message.split("|") : [""];
-		const InputFields = props => (
+		const InputFields = (
 			<Translate>
-				{({ translate }) => (
+				{translate => (
 					<div className="flex-column">
 						<input name="userIdInput" value={userIdInput} onChange={this.handleInputChange} placeholder={translate('PLAYER_ID')} required></input>
 						<input name="gameIdInput" value={gameIdInput} onChange={this.handleInputChange} placeholder={translate('GAME_ID')} required></input>

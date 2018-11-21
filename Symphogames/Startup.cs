@@ -56,13 +56,15 @@ namespace Symphogames
 
             app.UseMvc(routes =>
             {
-                routes.MapRoute(
-                    name: "symphogames",
-                    template: "Symphogames/{*pageInfo}",
-                    defaults: new { controller = "Home", action = "Symphogames" });
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller=Home}/{action=Index}/{id?}");
+				routes.MapRoute(
+					name: "default",
+					template: "{controller=Home}/{action=Index}");
+				routes.MapRoute(
+					name: "api",
+					template: "api/{controller}/{id}");
+				routes.MapSpaFallbackRoute(
+					name: "spa-fallback",
+					defaults: new { controller = "Home", action = "Index" });
             });
         }
     }

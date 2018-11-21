@@ -168,7 +168,7 @@ namespace Symphogames.Models
 				info.ActionInfo.Add(new SActionInfo { Type = SActionType.Defend, ActionName = "DEFEND" });
 				foreach (var player in inRangePlayers)
 				{
-					info.ActionInfo.Add(new SActionInfo { Type = SActionType.Attack, Target = player.Id, ActionName = $"ATTRACK|{player.Name}" });
+					info.ActionInfo.Add(new SActionInfo { Type = SActionType.Attack, Target = player.Id, ActionName = $"ATTACK|{player.Name}" });
 				}
 			}
 		}
