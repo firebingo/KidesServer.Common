@@ -23,6 +23,8 @@ namespace KidesServer.Models
 		public string RootDirectory;
 		public List<FileControllerPerson> PeopleList = new List<FileControllerPerson>();
 		private Dictionary<string, FileControllerPerson> _people;
+		public Dictionary<string, string> CustomMimeTypes = new Dictionary<string, string>();
+
 		[JsonIgnore]
 		public Dictionary<string, FileControllerPerson> People
 		{

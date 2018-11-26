@@ -114,26 +114,42 @@ namespace KidesServer.Controllers
 		[AllowAnonymous]
 		public ActionResult GetFile(string fileName, [FromQuery]string directory)
 		{
-			var userName = User.Identity.Name ?? "anon";
-			var fileUser = AppConfig.Config.FileAccess.People[userName];
-			if (fileUser == null || !fileUser.Download)
-				return BadRequest(new BaseResult() { message = "USER_NO_PERMISSIONS", success = false });
+			try
+			{
+				var userName = User.Identity.Name ?? "anon";
+				var fileUser = AppConfig.Config.FileAccess.People[userName];
+				if (fileUser == null || !fileUser.Download)
+					return BadRequest(new BaseResult() { message = "USER_NO_PERMISSIONS", success = false });
 
-			if (string.IsNullOrWhiteSpace(fileName))
-				return BadRequest(new BaseResult() { success = false, message = "INVALID_PARAMS" });
+				if (string.IsNullOrWhiteSpace(fileName))
+					return BadRequest(new BaseResult() { success = false, message = "INVALID_PARAMS" });
 
-			if(!string.IsNullOrWhiteSpace(directory))
-				fileName = $"{directory}\\{fileName}";
+				if (!string.IsNullOrWhiteSpace(directory))
+					fileName = $"{directory}\\{fileName}";
 
-			if (!FileLogic.CheckFilePermission(fileUser, fileName))
-				return BadRequest(new BaseResult() { message = "USER_NO_PERMISSIONS", success = false });
+				if (!FileLogic.CheckFilePermission(fileUser, fileName))
+					return BadRequest(new BaseResult() { message = "USER_NO_PERMISSIONS", success = false });
 
-			var fullPath = $"{AppConfig.Config.FileAccess.RootDirectory}\\{fileName}";
-			if(!System.IO.File.Exists(fullPath))
-				return BadRequest(new BaseResult { success = false, message = "FILE_NOT_EXIST" });
-			new FileExtensionContentTypeProvider().TryGetContentType(fullPath, out var contentType);
+				var fullPath = $"{AppConfig.Config.FileAccess.RootDirectory}\\{fileName}";
+				if (!System.IO.File.Exists(fullPath))
+					return BadRequest(new BaseResult { success = false, message = "FILE_NOT_EXIST" });
 
-			return PhysicalFile(fullPath, contentType);
+				string contentType = string.Empty;
+				string ext = Path.GetExtension(fullPath).TrimStart('.');
+				if (AppConfig.Config.FileAccess.CustomMimeTypes.ContainsKey(ext))
+					contentType = AppConfig.Config.FileAccess.CustomMimeTypes[ext];
+				else
+					new FileExtensionContentTypeProvider()?.TryGetContentType(fullPath, out contentType);
+				if (string.IsNullOrWhiteSpace(contentType))
+					contentType = "application/octet-stream";
+
+				return PhysicalFile(fullPath, contentType);
+			}
+			catch(Exception ex)
+			{
+				Helpers.ErrorLog.WriteError(ex);
+				return BadRequest("ERROR_GET_FILE");
+			}
 		}
 
 		[HttpGet, Route("list-directory")]

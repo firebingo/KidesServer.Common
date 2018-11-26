@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using KidesServer.Helpers;
 using KidesServer.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -56,29 +57,38 @@ namespace KidesServer
 					{
 						OnValidatePrincipal = context =>
 						{
-							FileControllerPerson user = null;
-							if(!string.IsNullOrWhiteSpace(context.UserName) && AppConfig.Config.FileAccess.People.ContainsKey(context.UserName.ToLowerInvariant()))
-								user = AppConfig.Config.FileAccess.People[context.UserName.ToLowerInvariant()];
-							if (!AppConfig.Config.FileAccess.People.ContainsKey("anon"))
+							try
 							{
-								context.AuthenticationFailMessage = "Authentication failed.";
-								return Task.CompletedTask;
-							}
-							if (user == null)
-								user = AppConfig.Config.FileAccess.People["anon"];
+								FileControllerPerson user = null;
+								if (!string.IsNullOrWhiteSpace(context.UserName) && AppConfig.Config.FileAccess.People.ContainsKey(context.UserName.ToLowerInvariant()))
+									user = AppConfig.Config.FileAccess.People[context.UserName.ToLowerInvariant()];
+								if (!AppConfig.Config.FileAccess.People.ContainsKey("anon"))
+								{
+									context.AuthenticationFailMessage = "Authentication failed.";
+									return Task.CompletedTask;
+								}
+								if (user == null)
+									user = AppConfig.Config.FileAccess.People["anon"];
 
-							if (user != null && user.CheckPassword(context.Password))
-							{
-								var claims = new List<Claim>
+								if (user != null && user.CheckPassword(context.Password))
+								{
+									var claims = new List<Claim>
 								{
 									new Claim(ClaimTypes.Name,
 											  string.IsNullOrWhiteSpace(context.UserName) ? "anon" : context.UserName,
 											  context.Options.ClaimsIssuer)
 								};
 
-								var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, BasicAuthenticationDefaults.AuthenticationScheme));
-								context.Principal = principal;
+									var principal = new ClaimsPrincipal(new ClaimsIdentity(claims, BasicAuthenticationDefaults.AuthenticationScheme));
+									context.Principal = principal;
 
+									return Task.CompletedTask;
+								}
+							}
+							catch (Exception ex)
+							{
+								ErrorLog.WriteError(ex);
+								context.AuthenticationFailMessage = "Authentication failed.";
 								return Task.CompletedTask;
 							}
 
