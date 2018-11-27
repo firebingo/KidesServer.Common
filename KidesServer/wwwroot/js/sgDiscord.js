@@ -738,6 +738,11 @@ function getSortArrow(tableType, field) {
 }
 
 window.onload = function () {
+	var sidMeta = document.querySelector("meta[name='serverid']");
+	if (sidMeta) {
+		serverId = sidMeta.getAttribute("content");
+	}
+
 	google.charts.load('current', {'packages':['corechart']});
 	google.charts.setOnLoadCallback(onGoogleLoaded);
 	genericErrorArea = document.getElementById('generic-error');
