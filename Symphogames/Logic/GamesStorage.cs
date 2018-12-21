@@ -1,42 +1,46 @@
 ﻿using KidesServer.Common;
+using Symphogames.Logic;
+using Symphogames.Models;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
-namespace Symphogames.Models
+namespace Symphogames.Logic
 {
 	public static class SymphogamesStorage
 	{
-		public static readonly ConcurrentDictionary<uint, SPlayer> Players;
 		public static readonly ConcurrentDictionary<uint, SGame> CurrentGames;
+		private static readonly ConcurrentDictionary<uint, GamesThread> _gameThreads;
 
 		static SymphogamesStorage()
 		{
-			Players = new ConcurrentDictionary<uint, SPlayer>();
 			CurrentGames = new ConcurrentDictionary<uint, SGame>();
+			_gameThreads = new ConcurrentDictionary<uint, GamesThread>();
 		}
 
-		public static Task<UIntResult> StartGame(uint id, string name, string image, int width, int height, List<DistrictInput> districts)
+		public static Task<UIntResult> CreateGame(uint id, string name, string image, int width, int height, List<DistrictInput> districts)
 		{
 			var res = new UIntResult();
 			var game = new SGame(id, name, width, height);
-			for(int i = 0; i < districts.Count; ++i)
+			for (int i = 0; i < districts.Count; ++i)
 			{
 				Dictionary<uint, SGamePlayer> dPlayers = new Dictionary<uint, SGamePlayer>();
-				foreach(var p in districts[i].PlayerIds)
+				foreach (var p in districts[i].PlayerIds)
 				{
-					if(!Players.ContainsKey(p))
+					if (!GamesDb.Players.ContainsKey(p))
 						return Task.FromResult(new UIntResult { message = $"USER_NOT_EXIST|{p}" });
-					var newPlayer = new SGamePlayer(Players[p], (uint)i, new Vector2<int>(0, 0));
+					var newPlayer = new SGamePlayer(GamesDb.Players[p], (uint)i, new Vector2<int>(0, 0));
 					dPlayers.Add(p, newPlayer);
 				}
 				var newDist = new SDistrict(i.ToString(), (uint)i, dPlayers);
 				game.AddDistrict(newDist);
 			}
 			CurrentGames.TryAdd(id, game);
-			if(Uri.TryCreate(image, UriKind.Absolute, out var u))
+			_gameThreads.TryAdd(id, new GamesThread(game));
+			if (Uri.TryCreate(image, UriKind.Absolute, out var u))
 				game.Map.MapImage = image;
 			else
 				game.Map.MapImage = $"/api/v1/symphogames/image?type=0&name={image}";
@@ -76,12 +80,13 @@ namespace Symphogames.Models
 			var gamePlayer = currentGame.GetPlayerById(playerId);
 			if (gamePlayer == null)
 				return Task.FromResult(new CurrentGamePlayerInfo { message = $"USER_NOT_EXIST|{playerId}" });
-			if(gamePlayer.AccessGuid != accessguid)
+			if (gamePlayer.AccessGuid != accessguid)
 				return Task.FromResult(new CurrentGamePlayerInfo { message = $"INVALID_ACCESS" });
 
 			res.GameInfo = new SGameInfo()
 			{
 				Id = currentGame.Id,
+				Started = currentGame.Started,
 				CurrentTurn = currentGame.CurrentTurn,
 				TimeOfDay = currentGame.TimeOfDay,
 				Completed = currentGame.Completed
@@ -108,7 +113,8 @@ namespace Symphogames.Models
 					Kills = gamePlayer.Kills.Count,
 					Range = 0.0
 				},
-				DeadPlayers = deadPlayers.Select(x => new SPlayerInfo() {
+				DeadPlayers = deadPlayers.Select(x => new SPlayerInfo()
+				{
 					Id = x.Value.Player.Id,
 					Name = x.Value.Player.Name,
 					Avatar = x.Value.Player.AvatarUrl,
@@ -131,7 +137,7 @@ namespace Symphogames.Models
 				}).ToList()
 			};
 
-			GetAviliableActions(ref res);
+			GetAviliableActions(gamePlayer, ref res);
 
 			res.success = true;
 			res.message = string.Empty;
@@ -139,29 +145,36 @@ namespace Symphogames.Models
 			return Task.FromResult(res);
 		}
 
-		private static void GetAviliableActions(ref CurrentGamePlayerInfo info)
+		private static void GetAviliableActions(SGamePlayer gamePlayer, ref CurrentGamePlayerInfo info)
 		{
-			info.ActionInfo = new List<SActionInfo>();
+			if (gamePlayer.State != SPlayerState.Awake)
+				return;
 
-			info.ActionInfo.Add(new SActionInfo { Type = SActionType.Wait, ActionName = "WAIT" });
+			info.ActionInfo = new List<SActionInfo>
+			{
+				new SActionInfo { Type = SActionType.Wait, ActionName = "WAIT" }
+			};
 
-			var gamePlayer = info.PlayerInfo.ThisPlayer;
-			if (gamePlayer.Position.X != 0)
-				info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.West, ActionName = "MOVE|WEST" });
-			if(gamePlayer.Position.X != 0 && gamePlayer.Position.Y < info.MapInfo.Map.Size.Y)
-				info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.SouthWest, ActionName = "MOVE|SOUTHWEST" });
-			if (gamePlayer.Position.Y < info.MapInfo.Map.Size.Y)
-				info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.South, ActionName = "MOVE|SOUTH" });
-			if (gamePlayer.Position.Y < info.MapInfo.Map.Size.Y && gamePlayer.Position.X < info.MapInfo.Map.Size.X)
-				info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.SouthEast, ActionName = "MOVE|SOUTHEAST" });
-			if (gamePlayer.Position.X < info.MapInfo.Map.Size.X)
-				info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.East, ActionName = "MOVE|EAST" });
-			if (gamePlayer.Position.X < info.MapInfo.Map.Size.X && gamePlayer.Position.Y != 0)
-				info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.NorthEast, ActionName = "MOVE|NORTHEAST" });
-			if (gamePlayer.Position.Y != 0)
-				info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.North, ActionName = "MOVE|NORTH" });
-			if (gamePlayer.Position.Y != 0 && gamePlayer.Position.X != 0)
-				info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.NorthWest, ActionName = "MOVE|NORTHWEST" });
+			var gamePlayerInfo = info.PlayerInfo.ThisPlayer;
+			if (gamePlayer.Energy >= 0.1f)
+			{
+				if (gamePlayerInfo.Position.X != 0)
+					info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.West, ActionName = "MOVE|WEST" });
+				if (gamePlayerInfo.Position.X != 0 && gamePlayerInfo.Position.Y < info.MapInfo.Map.Size.Y)
+					info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.SouthWest, ActionName = "MOVE|SOUTHWEST" });
+				if (gamePlayerInfo.Position.Y < info.MapInfo.Map.Size.Y)
+					info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.South, ActionName = "MOVE|SOUTH" });
+				if (gamePlayerInfo.Position.Y < info.MapInfo.Map.Size.Y && gamePlayerInfo.Position.X < info.MapInfo.Map.Size.X)
+					info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.SouthEast, ActionName = "MOVE|SOUTHEAST" });
+				if (gamePlayerInfo.Position.X < info.MapInfo.Map.Size.X)
+					info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.East, ActionName = "MOVE|EAST" });
+				if (gamePlayerInfo.Position.X < info.MapInfo.Map.Size.X && gamePlayerInfo.Position.Y != 0)
+					info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.NorthEast, ActionName = "MOVE|NORTHEAST" });
+				if (gamePlayerInfo.Position.Y != 0)
+					info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.North, ActionName = "MOVE|NORTH" });
+				if (gamePlayerInfo.Position.Y != 0 && gamePlayerInfo.Position.X != 0)
+					info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.NorthWest, ActionName = "MOVE|NORTHWEST" });
+			}
 			var inRangePlayers = info.PlayerInfo.Players.Where(x => x.Range < 1.0);
 			if (inRangePlayers.Count() > 1)
 			{
@@ -171,6 +184,36 @@ namespace Symphogames.Models
 					info.ActionInfo.Add(new SActionInfo { Type = SActionType.Attack, Target = player.Id, ActionName = $"ATTACK|{player.Name}" });
 				}
 			}
+		}
+		public static async Task<BaseResult> SubmitTurn(uint gameId, uint playerId, string accessguid, SActionInfo action)
+		{
+			var res = new BaseResult();
+
+			var gameInfo = await GetCurrentPlayerInfo(gameId, playerId, accessguid);
+			if (!gameInfo.success)
+				return new BaseResult() { message = gameInfo.message };
+
+			var currentGame = CurrentGames[gameId];
+			var gamePlayer = currentGame.GetPlayerById(playerId);
+			GetAviliableActions(gamePlayer, ref gameInfo);
+
+			SActionInfo foundAction = null;
+			foreach(var a in gameInfo.ActionInfo)
+			{
+				if(a.Type == action.Type && a.Direction == action.Direction && a.Target == action.Target)
+					foundAction = a;
+			}
+
+			if (foundAction == null)
+				return new BaseResult() { message = "INVALID_ACTION" };
+
+			if (!currentGame.Turns[currentGame.CurrentTurn].Actions.TryAdd(playerId, new SAction() { Type = action.Type, Direction = action.Direction, Target = action.Target }))
+				return new BaseResult() { message = "TURN_ALREADY_SUBMIT" };
+
+			res.success = true;
+			res.message = string.Empty;
+
+			return res;
 		}
 	}
 }

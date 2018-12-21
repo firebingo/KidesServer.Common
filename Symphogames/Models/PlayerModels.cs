@@ -78,6 +78,7 @@ namespace Symphogames.Models
 		public float Health = 1.0f;
 		public float Energy = 1.0f;
 		public SPlayerState State;
+		public int DeathTurn = 0;
 
 		public SGamePlayer(SPlayer player, uint DistrictId, Vector2<int> pos)
 		{
@@ -92,13 +93,15 @@ namespace Symphogames.Models
 	{
 		public uint GameId { get; }
 		public uint PlayerId { get; }
+		public uint TargetId { get; }
 		public int TurnNumber { get; }
 		public string Text { get; }
 
-		public SKillRecord(uint game, uint player, int turnNumber, string text)
+		public SKillRecord(uint game, uint player, uint target, int turnNumber, string text)
 		{
 			GameId = game;
 			PlayerId = player;
+			TargetId = target;
 			TurnNumber = turnNumber;
 			Text = text;
 		}

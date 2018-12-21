@@ -33,6 +33,7 @@ namespace Symphogames.Models
 	public class SGameInfo
 	{
 		public uint Id;
+		public bool Started;
 		public int CurrentTurn;
 		public CurrentTime TimeOfDay;
 		public bool Completed;

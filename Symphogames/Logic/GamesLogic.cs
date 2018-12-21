@@ -16,7 +16,7 @@ namespace Symphogames.Logic
 			{
 				var res = new UIntResult();
 				var id = await GamesDb.GetNextPlayerId();
-				if (SymphogamesStorage.Players.ContainsKey(id))
+				if (GamesDb.Players.ContainsKey(id))
 					return new UIntResult { message = "USER_EXISTS" };
 
 				var p = new SPlayer(id, playerName);
@@ -34,13 +34,13 @@ namespace Symphogames.Logic
 			}
 		}
 
-		public static async Task<UIntResult> StartGame(StartGameInput input)
+		public static async Task<UIntResult> CreateGame(CreateGameInput input)
 		{
 			try
 			{
 				var res = new UIntResult();
 				var id = await GamesDb.GetNextGameId();
-				res = await SymphogamesStorage.StartGame(id, input.GameName, input.MapImage, input.Size.X, input.Size.Y, input.Districts);
+				res = await SymphogamesStorage.CreateGame(id, input.GameName, input.MapImage, input.Size.X, input.Size.Y, input.Districts);
 				return res;
 			}
 			catch (Exception ex)
@@ -72,6 +72,20 @@ namespace Symphogames.Logic
 				return res;
 			}
 			catch(Exception ex)
+			{
+				ErrorLog.WriteError(ex);
+				return new CurrentGamePlayerInfo { message = "EXCEPTION" };
+			}
+		}
+
+		public static async Task<BaseResult> SubmitTurn(uint gameId, uint playerId, string accessguid, SActionInfo action)
+		{
+			try
+			{
+				var res = await SymphogamesStorage.SubmitTurn(gameId, playerId, accessguid, action);
+				return res;
+			}
+			catch (Exception ex)
 			{
 				ErrorLog.WriteError(ex);
 				return new CurrentGamePlayerInfo { message = "EXCEPTION" };

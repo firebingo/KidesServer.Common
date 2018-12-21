@@ -38,10 +38,10 @@ namespace KidesServer.Controllers
 		//}
 
 		[Returns(typeof(UIntResult))]
-		[HttpPost, Route("start-game")]
-		public async Task<IActionResult> StartGame([FromBody] StartGameInput input)
+		[HttpPost, Route("create-game")]
+		public async Task<IActionResult> CreateGame([FromBody]CreateGameInput input)
 		{
-			var result = await GamesLogic.StartGame(input);
+			var result = await GamesLogic.CreateGame(input);
 
 			if (result.success)
 				return Ok(result);
@@ -66,6 +66,18 @@ namespace KidesServer.Controllers
 		public async Task<IActionResult> GetCurrentPlayerInfo([FromQuery]uint gameId, [FromQuery]uint playerId, [FromQuery]string accessguid)
 		{
 			var result = await GamesLogic.GetCurrentPlayerInfo(gameId, playerId, accessguid);
+
+			if (result.success)
+				return Ok(result);
+			else
+				return BadRequest(result);
+		}
+
+		[Returns(typeof(BaseResult))]
+		[HttpPost, Route("submit-turn")]
+		public async Task<IActionResult> SubmitTurn([FromQuery]uint gameId, [FromQuery]uint playerId, [FromQuery]string accessguid, [FromBody]SActionInfo action)
+		{
+			var result = await GamesLogic.SubmitTurn(gameId, playerId, accessguid, action);
 
 			if (result.success)
 				return Ok(result);

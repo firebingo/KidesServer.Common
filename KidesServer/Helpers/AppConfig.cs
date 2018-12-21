@@ -9,7 +9,7 @@ namespace KidesServer
 	public static class AppConfig
 	{
 		public static string folderLocation = string.Empty;
-		private static object cfgLock = new object();
+		private static readonly object cfgLock = new object();
 		private static ConfigModel _config;
 
 		static AppConfig()

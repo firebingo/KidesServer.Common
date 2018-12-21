@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Symphogames.Models
 {
-	public class StartGameInput
+	public class CreateGameInput
 	{
 		public string GameName;
 		public string MapImage;

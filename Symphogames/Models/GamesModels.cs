@@ -44,6 +44,7 @@ namespace Symphogames.Models
 	{
 		public readonly uint Id;
 		public readonly string Name;
+		public bool Started { get; private set; }
 		public readonly SMap Map;
 		public readonly Dictionary<uint, SDistrict> Districts;
 		public readonly List<STurn> Turns;
@@ -51,21 +52,39 @@ namespace Symphogames.Models
 		public CurrentTime TimeOfDay;
 		public bool Completed { get; private set; }
 		public bool IsPastViewable { get; private set; } //Whether or not the game can be replayed in the interface later
+		public int PlayerCount { get; private set; }
 
 		public SGame(uint id, string iN, int width, int height)
 		{
 			Id = id;
 			Name = iN;
+			Started = false;
 			Map = new SMap(new Vector2<int>(width, height));
 			Districts = new Dictionary<uint, SDistrict>();
-			Turns = new List<STurn>();
+			Turns = new List<STurn>() { new STurn() };
 			CurrentTurn = 0;
 			TimeOfDay = CurrentTime.Day;
+		}
+
+		public bool AllTurnsSubmitted
+		{
+			get
+			{
+				if (GetAlivePlayers().Count == Turns[CurrentTurn].Actions.Count)
+					return true;
+				return false;
+			}
+		}
+
+		public void StartGame()
+		{
+			Started = true;
 		}
 
 		public void AddDistrict(SDistrict dis)
 		{
 			Districts.Add(dis.Id, dis);
+			PlayerCount += dis.Players.Count;
 		}
 
 		public Dictionary<uint, SGamePlayer> GetPlayers()
@@ -87,6 +106,18 @@ namespace Symphogames.Models
 					return d.Value.Players[id];
 			}
 			return null;
+		}
+
+		public Dictionary<uint, SGamePlayer> GetAlivePlayers()
+		{
+			var ret = new Dictionary<uint, SGamePlayer>();
+			foreach (var d in Districts)
+			{
+				foreach (var p in d.Value.Players)
+					if (p.Value.State != SPlayerState.Dead)
+						ret.Add(p.Key, p.Value);
+			}
+			return ret;
 		}
 
 		public Dictionary<uint, SGamePlayer> GetDeadPlayers()
