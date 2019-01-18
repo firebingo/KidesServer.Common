@@ -92,13 +92,17 @@
 		align-items: center;
 		margin: auto;
 		.avatar-cell {
-			flex-basis: 200px;
+            min-width: 200px;
+			width: 200px;
+			height: 200px;
+            min-height: 200px;
 			padding: 0.2rem;
 			margin: 0.2rem;
 			border: @small-border-width solid @base-border-color;
-			img { width: 100%; vertical-align: middle; }
+			img { width: 100%; }
 		}
 		.info-cell {
+            max-width: 580px;
 			padding: @table-cell-padding;
 			.info-cell-area {
 				display: flex;
