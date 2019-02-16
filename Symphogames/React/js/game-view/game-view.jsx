@@ -5,7 +5,7 @@ import { Translate } from "react-localize-redux";
 import { Map } from "./map.jsx";
 import { TurnControls } from "./turn-controls.jsx";
 
-export class GameView extends React.Component {
+class GameView extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -79,3 +79,5 @@ export class GameView extends React.Component {
 		hasSubmittedTurn = true;
 	}
 }
+
+export default GameView;

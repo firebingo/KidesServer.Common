@@ -215,7 +215,7 @@ export class TurnControls extends React.Component {
 		const action = gameInfo.actionInfo.find(x => x.type === gameEnums.action["MOVE"] && x.direction === gameEnums.direction[dir]);
 		if (action && (selectedAction.direction !== action.direction)) {
 			this.setState({
-				selectedAction = action
+				selectedAction: action
 			});
 		}
 	}
@@ -230,7 +230,7 @@ export class TurnControls extends React.Component {
 		}
 		if (action) {
 			this.setState({
-				selectedAction = action
+				selectedAction: action
 			});
 		}
 	}
@@ -252,7 +252,7 @@ export class TurnControls extends React.Component {
 		}
 		if (action) {
 			this.setState({
-				selectedAction = action
+				selectedAction: action
 			});
 		}
 	}

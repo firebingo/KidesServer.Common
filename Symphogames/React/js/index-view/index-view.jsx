@@ -1,10 +1,11 @@
 ﻿import React from "react";
 import ReactDOM from "react-dom";
-import { Translate } from "react-localize-redux";
+//import { Translate } from "react-localize-redux";
+import { withTranslation } from 'react-i18next';
 import { Redirect } from "react-router-dom";
 
-export class IndexView extends React.Component {
-	constructor(props) {
+class IndexView extends React.Component {
+    constructor(props) {
 		super(props);
 		this.joinGame = this.joinGame.bind(this);
 		this.handleInputChange = this.handleInputChange.bind(this);
@@ -17,30 +18,33 @@ export class IndexView extends React.Component {
 		}
 	}
 
-	render() {
-		const { userIdInput, gameIdInput, error, redirectToGame } = this.state;
-		const errorSplit = (error && error.message) ? error.message.split("|") : [""];
-		const InputFields = (
-			<Translate>
-				{translate => (
-					<div className="flex-column">
-						<input name="userIdInput" value={userIdInput} onChange={this.handleInputChange} placeholder={translate('PLAYER_ID')} required></input>
-						<input name="gameIdInput" value={gameIdInput} onChange={this.handleInputChange} placeholder={translate('GAME_ID')} required></input>
-						<input type="submit" value={translate('JOIN')} />
-						{(errorSplit.length > 0 && errorSplit[0]) && <span className="error-text">{translate(errorSplit[0], { id: errorSplit[1] })}</span>}
-					</div>
-				)}
-			</Translate>
-		);
+    render() {
+		const { redirectToGame } = this.state;
+		
 		if (redirectToGame) {
 			return <Redirect to="/game" />;
 		} else {
 			return (
 				<form className="centered" onSubmit={this.joinGame}>
-					<InputFields />
+                    {this.renderInputFields()}
 				</form>);
 		}
-	}
+    }
+
+    renderInputFields() {
+        const { t, i18n } = this.props;
+        const { userIdInput, gameIdInput, error } = this.state;
+        const errorSplit = (error && error.message) ? error.message.split("|") : [""];
+        debugger;
+        var test = t('PLAYER_ID');
+        return (
+            <div className="flex-column">
+                <input name="userIdInput" value={userIdInput} onChange={this.handleInputChange} placeholder={t('PLAYER_ID')} required></input>
+                <input name="gameIdInput" value={gameIdInput} onChange={this.handleInputChange} placeholder={t('GAME_ID')} required></input>
+                <input type="submit" value={t('JOIN')} />
+                {(errorSplit.length > 0 && errorSplit[0]) && <span className="error-text">{t(errorSplit[0], { id: errorSplit[1] })}</span>}
+            </div>);
+    }
 
 	handleInputChange(ev) {
 		const target = ev.target;
@@ -81,3 +85,5 @@ export class IndexView extends React.Component {
 				});
 	}
 }
+
+export default withTranslation()(IndexView);

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SpaServices.Webpack;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -41,7 +42,12 @@ namespace Symphogames
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-            }
+				app.UseWebpackDevMiddleware(new WebpackDevMiddlewareOptions
+				{
+					HotModuleReplacement = true,
+					ReactHotModuleReplacement = true,
+				});
+			}
             else
             {
                 app.UseExceptionHandler("/Home/Error");
@@ -50,7 +56,7 @@ namespace Symphogames
 
             AppDomain.CurrentDomain.SetData("DataDirectory", System.IO.Path.Combine(env.ContentRootPath, "App_Data"));
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseCookiePolicy();
 
@@ -58,13 +64,13 @@ namespace Symphogames
             {
 				routes.MapRoute(
 					name: "default",
-					template: "{controller=Home}/{action=Index}");
+					template: "{controller=Home}/{action=Root}");
 				routes.MapRoute(
 					name: "api",
-					template: "api/{controller}/{id}");
+					template: "api/{controller}/{id?}");
 				routes.MapSpaFallbackRoute(
 					name: "spa-fallback",
-					defaults: new { controller = "Home", action = "Index" });
+					defaults: new { controller = "Home", action = "Root" });
             });
         }
     }
