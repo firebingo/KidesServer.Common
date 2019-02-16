@@ -140,7 +140,7 @@ function userInfoFailure(resp) {
 function buildUserInfo(data) {
 	var jDate = moment(data.joinedDate);
 	var html = '\
-	<div class="info-table" style="width: ' + 900 + ';">\
+	<div class="info-table" style="width: ' + 900 + 'px;">\
 		<div class="info-table-row">\
 			<div class="avatar-cell"><img src="' + (data.avatarUrl ? data.avatarUrl : placeholderAvatar) + '"/></div>\
 			<div class="info-cell">\
@@ -741,6 +741,10 @@ window.onload = function () {
 	var sidMeta = document.querySelector("meta[name='serverid']");
 	if (sidMeta) {
 		serverId = sidMeta.getAttribute("content");
+	}
+	var roleMeta = document.querySelector("meta[name='defaultroledid']");
+	if (roleMeta) {
+		seletedRoleId = roleMeta.getAttribute("content");
 	}
 
 	google.charts.load('current', {'packages':['corechart']});
