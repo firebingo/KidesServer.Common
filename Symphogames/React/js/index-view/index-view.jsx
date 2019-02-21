@@ -35,8 +35,6 @@ class IndexView extends React.Component {
         const { t, i18n } = this.props;
         const { userIdInput, gameIdInput, error } = this.state;
         const errorSplit = (error && error.message) ? error.message.split("|") : [""];
-        debugger;
-        var test = t('PLAYER_ID');
         return (
             <div className="flex-column">
                 <input name="userIdInput" value={userIdInput} onChange={this.handleInputChange} placeholder={t('PLAYER_ID')} required></input>

@@ -21,7 +21,7 @@ i18next
     .init({
         backend: {
             loadPath: '/dist/translations/{{lng}}.json',
-            parse: (data) => data
+            parse: (data) => { return JSON.parse(data); }
         },
         lng: "en",
         fallbackLng: "en",
@@ -30,6 +30,5 @@ i18next
             escapeValue: false
         }
     }, function (error, t) {
-        debugger;
         renderView();
     });
