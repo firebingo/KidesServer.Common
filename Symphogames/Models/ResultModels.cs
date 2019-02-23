@@ -57,13 +57,18 @@ namespace Symphogames.Models
 	public class SPlayerInfo
 	{
 		public uint Id;
+		public bool? HasSubmittedTurn;
 		public string Name;
 		public string Avatar;
 		public uint DistrictId;
 		public Vector2<int> Position;
 		public SPlayerState State;
+		public double? Health;
+		public double? MaxHealth;
+		public double? Energy;
+		public double? MaxEnergy;
 		public int Kills;
-		public double Range;
+		public double Range; //How far this player is from current player
 	}
 
 	[Serializable]

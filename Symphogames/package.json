@@ -17,7 +17,6 @@
     "less-loader": "^4.1.0",
     "mini-css-extract-plugin": "^0.4.3",
     "path": "0.12.7",
-    "react-localize-redux": "3.5.2",
     "i18next": "^15.0.4",
     "react-i18next": "^10.1.2",
     "i18next-xhr-backend": "^2.0.0",

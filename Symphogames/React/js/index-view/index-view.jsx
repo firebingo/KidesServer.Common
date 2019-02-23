@@ -1,6 +1,5 @@
 ﻿import React from "react";
 import ReactDOM from "react-dom";
-//import { Translate } from "react-localize-redux";
 import { withTranslation } from 'react-i18next';
 import { Redirect } from "react-router-dom";
 

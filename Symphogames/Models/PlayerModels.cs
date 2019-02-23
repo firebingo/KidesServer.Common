@@ -75,10 +75,13 @@ namespace Symphogames.Models
 		public readonly uint DistrictId;
 		public List<SKillRecord> Kills;
 		public Vector2<int> Position;
+		public float MaxHealth = 1.0f;
+		public float MaxEnergy = 1.0f;
 		public float Health = 1.0f;
 		public float Energy = 1.0f;
 		public SPlayerState State;
-		public int DeathTurn = 0;
+		public int DeathTurn = 0; //The turn the player died on
+		public bool HasSubmittedTurn = false;
 
 		public SGamePlayer(SPlayer player, uint DistrictId, Vector2<int> pos)
 		{

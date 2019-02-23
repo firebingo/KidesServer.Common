@@ -2,7 +2,6 @@
 import ReactDOM from "react-dom";
 import { renderToStaticMarkup } from "react-dom/server";
 import { BrowserRouter, Route, Switch } from "react-router-dom";
-import { withLocalize } from "react-localize-redux";
 import IndexView from "./js/index-view/index-view.jsx"
 import GameView from "./js/game-view/game-view.jsx"
 
@@ -12,30 +11,9 @@ class Main extends React.Component {
         this.state = {
             isLoaded: true
 		};
-		this.props.initialize({
-			languages: [
-				{ name: "English", code: "en" },
-			],
-            options: {
-                renderToStaticMarkup,
-				defaultLanguage: "en"
-			}
-		});
 	}
 
-    componentDidMount() {
-		//fetch(`/dist/translations/en.json`)
-		//	.then(res => res.json())
-		//	.then(
-		//		(result) => {
-		//			this.props.addTranslationForLanguage(result, "en");
-		//			this.setState({ isLoaded: true });
-		//		},
-		//		(error) => {
-		//			console.log("Failed to load language file");
-		//			this.setState({ isLoaded: false });
-		//		});
-	}
+    componentDidMount() { }
 
 	render() {
 		const { isLoaded } = this.state;
@@ -53,4 +31,4 @@ class Main extends React.Component {
     }
 }
 
-export default withLocalize(Main);
+export default Main;

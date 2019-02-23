@@ -48,8 +48,9 @@ namespace Symphogames.Models
 		public readonly SMap Map;
 		public readonly Dictionary<uint, SDistrict> Districts;
 		public readonly List<STurn> Turns;
-		public int CurrentTurn;
-		public CurrentTime TimeOfDay;
+		//TODO: Make a config for things like turns in day etc.
+		public int CurrentTurn { get; private set; }
+		public CurrentTime TimeOfDay { get; private set; }
 		public bool Completed { get; private set; }
 		public bool IsPastViewable { get; private set; } //Whether or not the game can be replayed in the interface later
 		public int PlayerCount { get; private set; }
@@ -154,6 +155,13 @@ namespace Symphogames.Models
 						ret.Add(p.Key, p.Value);
 			}
 			return ret;
+		}
+
+		public void IncrementTurn()
+		{
+			Turns.Add(new STurn());
+			CurrentTurn++;
+			
 		}
 
 		public void FinishGame(bool canView)

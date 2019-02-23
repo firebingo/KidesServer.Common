@@ -2,7 +2,7 @@
 import ReactDOM from "react-dom";
 import { baseResolution, baseMapSize } from "../globals.js";
 
-export class Map extends React.Component {
+class Map extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {
@@ -61,3 +61,5 @@ export class Map extends React.Component {
 		c.style = `width: ${baseMapSize.x * newScale}; height: ${baseMapSize.y * newScale};`;
 	}
 }
+
+export default Map;

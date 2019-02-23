@@ -18,7 +18,9 @@ namespace Symphogames.Logic
 			_threadGame = game;
 			_timer = new Timer(SymphogamesConfig.Config.GameTickMs)
 			{
-				Enabled = true,
+				AutoReset = false,
+				Enabled = false,
+				SynchronizingObject = null
 			};
 			_timer.Elapsed += OnGameTick;
 			_timer.Start();
@@ -26,8 +28,6 @@ namespace Symphogames.Logic
 
 		private void OnGameTick(object sender, ElapsedEventArgs e)
 		{
-			_timer.Stop();
-
 			if (_threadGame.Started)
 			{
 				if (_threadGame.AllTurnsSubmitted)
@@ -43,11 +43,11 @@ namespace Symphogames.Logic
 									DoPlayerMove(player, action.Value);
 									break;
 								case SActionType.Wait:
-									player.Energy += 0.2f;
+									player.Energy = Math.Min(player.MaxEnergy, player.Energy + 0.2f);
 									action.Value.Result = true;
 									break;
 								case SActionType.Defend:
-									player.Energy += 0.1f;
+									player.Energy += Math.Min(player.MaxEnergy, player.Energy + 0.1f);
 									action.Value.Result = true;
 									break;
 								case SActionType.Attack:
@@ -61,6 +61,7 @@ namespace Symphogames.Logic
 							action.Value.Result = false;
 						}
 					}
+					_threadGame.IncrementTurn();
 				}
 			}
 
@@ -109,6 +110,7 @@ namespace Symphogames.Logic
 
 		private void DoPlayerAttack(SGamePlayer player, SAction action)
 		{
+			var damage = 0.0f;
 			if (!action.Target.HasValue)
 			{
 				action.Result = false;
@@ -131,26 +133,32 @@ namespace Symphogames.Logic
 			(x.Value.Type == SActionType.Defend || //If the target player is defending
 			(x.Value.Type == SActionType.Attack && x.Value.Target.Value == player.Player.Id)))) //if the target player is attacking this player
 			{
-				target.Health -= 0.1f;
+				damage = 0.1f;
 				action.Result = true;
 				return;
 			}
-			target.Health -= 0.2f;
+			damage -= 0.2f;
 			action.Result = true;
 
-			if(target.Health <= 0.0f)
+			if (player.Energy < 0.0f)
+				damage /= 2;
+
+			target.Health -= damage;
+			if (target.Health <= 0.0f)
 			{
 				target.State = SPlayerState.Dead;
 				target.DeathTurn = _threadGame.CurrentTurn;
 				player.Kills.Add(new SKillRecord(_threadGame.Id, player.Player.Id, target.Player.Id, _threadGame.CurrentTurn, ""));
 			}
 
+			player.Energy -= 0.1f;
 			return;
 		}
 
 		public void DestroyThread()
 		{
 			_timer.Enabled = false;
+			_timer.Stop();
 			_timer.Dispose();
 		}
 	}

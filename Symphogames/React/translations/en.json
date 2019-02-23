@@ -2,8 +2,8 @@
   "PLAYER_ID": "Player Id",
   "GAME_ID": "Game Id",
   "JOIN": "Join",
-  "USER_NOT_EXIST": "Could not find user with Id ${id}",
-  "GAME_NOT_EXIST": "Could not find game with Id ${id}",
+  "USER_NOT_EXIST": "Could not find user with Id {{id}}",
+  "GAME_NOT_EXIST": "Could not find game with Id {{id}}",
   "INVALID_ACCESS": "Invalid Access",
   "DAY": "Day",
   "NIGHT": "Night",
@@ -30,5 +30,5 @@
   "TURN_SUBMIT_WAIT": "Please Wait...",
   "SUBMIT_TURN": "Submit Turn",
   "LOADING": "Loading...",
-  "Error": "Error: ${msg}"
+  "Error": "Error: {{msg}}"
 }

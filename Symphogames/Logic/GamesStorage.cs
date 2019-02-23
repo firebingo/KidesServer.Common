@@ -45,6 +45,8 @@ namespace Symphogames.Logic
 			else
 				game.Map.MapImage = $"/api/v1/symphogames/image?type=0&name={image}";
 
+			//TODO: make another api for this and make a front end way to call it.
+			game.StartGame();
 			res.success = true;
 			res.message = string.Empty;
 			res.value = game.Id;
@@ -111,7 +113,12 @@ namespace Symphogames.Logic
 					Position = gamePlayer.Position,
 					State = gamePlayer.State,
 					Kills = gamePlayer.Kills.Count,
-					Range = 0.0
+					Range = 0.0,
+					HasSubmittedTurn = gamePlayer.HasSubmittedTurn,
+					Health = gamePlayer.Health,
+					MaxHealth = gamePlayer.MaxHealth,
+					Energy = gamePlayer.Energy,
+					MaxEnergy = gamePlayer.MaxEnergy
 				},
 				DeadPlayers = deadPlayers.Select(x => new SPlayerInfo()
 				{
@@ -210,6 +217,7 @@ namespace Symphogames.Logic
 			if (!currentGame.Turns[currentGame.CurrentTurn].Actions.TryAdd(playerId, new SAction() { Type = action.Type, Direction = action.Direction, Target = action.Target }))
 				return new BaseResult() { message = "TURN_ALREADY_SUBMIT" };
 
+			gamePlayer.HasSubmittedTurn = true;
 			res.success = true;
 			res.message = string.Empty;
 
