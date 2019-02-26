@@ -104,13 +104,9 @@ class TurnControls extends React.Component {
 				</div>
 			);
         }
-        debugger;
 		return (
 			<div>
                 <form onSubmit={e => this.submitTurn(e)} className="flex-column turn-actions">
-                    <div>
-                        <div>{`Health: ${gameInfo}`}</div>
-                    </div>
 					<div className="move-grid">
 						{/* Table is a 3x3 grid with empty center space */}
 						<table>
@@ -195,13 +191,14 @@ class TurnControls extends React.Component {
 		return (gameInfo.actionInfo.map((x) => {
 			if (x.type !== gameEnums.action["ATTACK"])
 				return;
-			const player = gameInfo.PlayerInfo.players.find(y => y.id === x.target);
+			const player = gameInfo.playerInfo.players.find(y => y.id === x.target);
 			if (!player)
 				return;
-			return (<div className="attack-option">
-				<input type="radio" value={x.target}
+            return (<div key={`attack-${player.id}`} className="attack-option">
+                <input id={`attack-radio-${player.id}`} type="radio" value={x.target}
 					checked={selectedAction.target === x.target}
-					onChange={e => attackPlayerClicked(e)}>{`${player.name} (${player.position.x}, ${player.position.y})`}</input>
+                    onChange={e => attackPlayerClicked(e)} />
+                <label htmlFor={`attack-radio-${player.id}`}>{`${player.name} (${player.position.x}, ${player.position.y})`}</label>
 			</div>)
 		}));
 	}
@@ -295,7 +292,10 @@ class TurnControls extends React.Component {
 
     submitTurn(e) {
 		if (this.props.submitTurn) {
-			this.props.submitTurn(e, this.state.selectedAction);
+            this.props.submitTurn(e, this.state.selectedAction);
+            this.setState({
+                selectedAction: {}
+            });
 		}
 	}
 }

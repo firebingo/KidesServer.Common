@@ -43,17 +43,18 @@ namespace Symphogames.Logic
 									DoPlayerMove(player, action.Value);
 									break;
 								case SActionType.Wait:
-									player.Energy = Math.Min(player.MaxEnergy, player.Energy + 0.2f);
+									player.Energy = Math.Min(player.MaxEnergy, player.Energy + 0.2);
 									action.Value.Result = true;
 									break;
 								case SActionType.Defend:
-									player.Energy += Math.Min(player.MaxEnergy, player.Energy + 0.1f);
+									player.Energy = Math.Min(player.MaxEnergy, player.Energy + 0.1);
 									action.Value.Result = true;
 									break;
 								case SActionType.Attack:
 									DoPlayerAttack(player, action.Value);
 									break;
 							}
+							player.HasSubmittedTurn = false;
 						}
 						catch (Exception ex)
 						{
@@ -105,12 +106,12 @@ namespace Symphogames.Logic
 					return;
 			}
 			action.Result = true;
-			player.Energy -= 0.1f;
+			player.Energy -= 0.1;
 		}
 
 		private void DoPlayerAttack(SGamePlayer player, SAction action)
 		{
-			var damage = 0.0f;
+			var damage = 0.0;
 			if (!action.Target.HasValue)
 			{
 				action.Result = false;
@@ -133,25 +134,25 @@ namespace Symphogames.Logic
 			(x.Value.Type == SActionType.Defend || //If the target player is defending
 			(x.Value.Type == SActionType.Attack && x.Value.Target.Value == player.Player.Id)))) //if the target player is attacking this player
 			{
-				damage = 0.1f;
+				damage = 0.1;
 				action.Result = true;
 				return;
 			}
-			damage -= 0.2f;
+			damage -= 0.2;
 			action.Result = true;
 
-			if (player.Energy < 0.0f)
+			if (player.Energy < 0.0)
 				damage /= 2;
 
 			target.Health -= damage;
-			if (target.Health <= 0.0f)
+			if (target.Health <= 0.0)
 			{
 				target.State = SPlayerState.Dead;
 				target.DeathTurn = _threadGame.CurrentTurn;
 				player.Kills.Add(new SKillRecord(_threadGame.Id, player.Player.Id, target.Player.Id, _threadGame.CurrentTurn, ""));
 			}
 
-			player.Energy -= 0.1f;
+			player.Energy -= 0.1;
 			return;
 		}
 

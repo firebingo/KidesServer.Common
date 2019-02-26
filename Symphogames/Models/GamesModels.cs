@@ -54,8 +54,9 @@ namespace Symphogames.Models
 		public bool Completed { get; private set; }
 		public bool IsPastViewable { get; private set; } //Whether or not the game can be replayed in the interface later
 		public int PlayerCount { get; private set; }
+		public int RandomSeed { get; private set; }
 
-		public SGame(uint id, string iN, int width, int height)
+		public SGame(uint id, string iN, int width, int height, int seed)
 		{
 			Id = id;
 			Name = iN;
@@ -65,6 +66,7 @@ namespace Symphogames.Models
 			Turns = new List<STurn>() { new STurn() };
 			CurrentTurn = 0;
 			TimeOfDay = CurrentTime.Day;
+			RandomSeed = seed;
 		}
 
 		public bool AllTurnsSubmitted
@@ -161,7 +163,6 @@ namespace Symphogames.Models
 		{
 			Turns.Add(new STurn());
 			CurrentTurn++;
-			
 		}
 
 		public void FinishGame(bool canView)

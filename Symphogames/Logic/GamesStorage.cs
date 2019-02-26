@@ -21,10 +21,10 @@ namespace Symphogames.Logic
 			_gameThreads = new ConcurrentDictionary<uint, GamesThread>();
 		}
 
-		public static Task<UIntResult> CreateGame(uint id, string name, string image, int width, int height, List<DistrictInput> districts)
+		public static Task<UIntResult> CreateGame(uint id, string name, string image, int width, int height, List<DistrictInput> districts, int? seed = null)
 		{
 			var res = new UIntResult();
-			var game = new SGame(id, name, width, height);
+			var game = new SGame(id, name, width, height, seed ?? (int)(id + name.ToCharArray().Sum(x => x) + width + height + districts.Count + DateTime.UtcNow.Millisecond));
 			for (int i = 0; i < districts.Count; ++i)
 			{
 				Dictionary<uint, SGamePlayer> dPlayers = new Dictionary<uint, SGamePlayer>();
@@ -182,8 +182,8 @@ namespace Symphogames.Logic
 				if (gamePlayerInfo.Position.Y != 0 && gamePlayerInfo.Position.X != 0)
 					info.ActionInfo.Add(new SActionInfo { Type = SActionType.Move, Direction = SDirection.NorthWest, ActionName = "MOVE|NORTHWEST" });
 			}
-			var inRangePlayers = info.PlayerInfo.Players.Where(x => x.Range < 1.0);
-			if (inRangePlayers.Count() > 1)
+			var inRangePlayers = info.PlayerInfo.Players.Where(x => x.Range <= 1.0 && x.Id != gamePlayer.Player.Id);
+			if (inRangePlayers.Count() > 0)
 			{
 				info.ActionInfo.Add(new SActionInfo { Type = SActionType.Defend, ActionName = "DEFEND" });
 				foreach (var player in inRangePlayers)

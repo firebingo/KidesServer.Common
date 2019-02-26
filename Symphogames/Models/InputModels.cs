@@ -12,6 +12,7 @@ namespace Symphogames.Models
 		public string MapImage;
 		public Vector2<int> Size;
 		public List<DistrictInput> Districts;
+		public int? Seed;
 	}
 
 	public class DistrictInput

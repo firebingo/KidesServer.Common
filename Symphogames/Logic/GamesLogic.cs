@@ -40,7 +40,7 @@ namespace Symphogames.Logic
 			{
 				var res = new UIntResult();
 				var id = await GamesDb.GetNextGameId();
-				res = await SymphogamesStorage.CreateGame(id, input.GameName, input.MapImage, input.Size.X, input.Size.Y, input.Districts);
+				res = await SymphogamesStorage.CreateGame(id, input.GameName, input.MapImage, input.Size.X, input.Size.Y, input.Districts, input.Seed);
 				return res;
 			}
 			catch (Exception ex)
