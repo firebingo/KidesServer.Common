@@ -1,5 +1,4 @@
-﻿using KidesServer.DataBase;
-using KidesServer.Models;
+﻿using KidesServer.Models;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
@@ -13,6 +12,7 @@ using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
 using System.Net;
 using System.Globalization;
+using KidesServer.Common.DataBase;
 
 namespace KidesServer.Logic
 {
@@ -57,7 +57,8 @@ namespace KidesServer.Logic
 				{
 					rows = new List<MessageListReadModelRow>()
 				};
-				await DataLayerShortcut.ExecuteReader<List<MessageListReadModelRow>>(ReadMessageList, readList.rows, queryString, new MySqlParameter("@serverId", input.serverId), new MySqlParameter("@startDate", input.startDate));
+				await DataLayerShortcut.ExecuteReader<List<MessageListReadModelRow>>(ReadMessageList, readList.rows, 
+					AppConfig.Config.DBConfig.ConnectionString, queryString, new MySqlParameter("@serverId", input.serverId), new MySqlParameter("@startDate", input.startDate));
 				var roles = await LoadRoleList(input.serverId);
 				//Add the rows to the result
 				readList.rows = readList.rows.OrderByDescending(x => x.messageCount).ToList();
@@ -195,7 +196,8 @@ namespace KidesServer.Logic
 									LEFT JOIN usersinservers ON users.userID=usersinservers.userID
 									WHERE users.userID=@userId and serverID=@serverId;";
 				var readUser = new UserInfoReadModel();
-				await DataLayerShortcut.ExecuteReader<UserInfoReadModel>(ReadUserInfo, readUser, queryString, new MySqlParameter("@serverId", serverId), new MySqlParameter("@userId", userId));
+				await DataLayerShortcut.ExecuteReader<UserInfoReadModel>(ReadUserInfo, readUser, AppConfig.Config.DBConfig.ConnectionString,
+					queryString, new MySqlParameter("@serverId", serverId), new MySqlParameter("@userId", userId));
 				if (readUser.userId == 0)
 					throw new Exception("User not found");
 				queryString = @"SELECT COUNT(*), MONTH(mesTime), YEAR(mesTime) 
@@ -204,7 +206,8 @@ namespace KidesServer.Logic
 								GROUP BY DATE_FORMAT(mesTime, '%Y%m')
 								ORDER BY mesTime DESC;";
 				List<DiscordUserMessageDensity> density = new List<DiscordUserMessageDensity>();
-				await DataLayerShortcut.ExecuteReader<List<DiscordUserMessageDensity>>(ReadUserMessageDensity, density, queryString, new MySqlParameter("@serverId", serverId), new MySqlParameter("@userId", userId));
+				await DataLayerShortcut.ExecuteReader<List<DiscordUserMessageDensity>>(ReadUserMessageDensity, density, AppConfig.Config.DBConfig.ConnectionString,
+					queryString, new MySqlParameter("@serverId", serverId), new MySqlParameter("@userId", userId));
 				var roles = await LoadRoleList(serverId);
 				result.userId = readUser.userId.ToString();
 				result.userName = readUser.userName;
@@ -302,7 +305,8 @@ namespace KidesServer.Logic
 									FROM roles
 									WHERE roles.serverID=@serverId AND NOT isDeleted
 									ORDER BY roles.roleName";
-				await DataLayerShortcut.ExecuteReader<List<DiscordRoleListRow>>(ReadRoleList, results.results, queryString, new MySqlParameter("@serverId", serverId));
+				await DataLayerShortcut.ExecuteReader<List<DiscordRoleListRow>>(ReadRoleList, results.results, AppConfig.Config.DBConfig.ConnectionString,
+					queryString, new MySqlParameter("@serverId", serverId));
 			}
 			catch (Exception e)
 			{
@@ -379,8 +383,9 @@ namespace KidesServer.Logic
 									 GROUP BY emojiID
 									 ORDER BY emCount DESC) prequery) mainquery
 									 ORDER BY {EmojiListSortOrderToParam(input.sort, input.isDesc)}";
-				await DataLayerShortcut.ExecuteReader<List<DiscordEmojiListRow>>(ReadEmojiList, result.results, queryString, new MySqlParameter("@serverId", input.serverId),
-					new MySqlParameter("@startDate", input.startDate), new MySqlParameter("@botId", AppConfig.Config.botId), new MySqlParameter("@userID", (input.userFilterId ?? 0)));
+				await DataLayerShortcut.ExecuteReader<List<DiscordEmojiListRow>>(ReadEmojiList, result.results, queryString, AppConfig.Config.DBConfig.ConnectionString,
+					new MySqlParameter("@serverId", input.serverId), new MySqlParameter("@startDate", input.startDate), new MySqlParameter("@botId", AppConfig.Config.botId), 
+					new MySqlParameter("@userID", (input.userFilterId ?? 0)));
 
 				//Filter by emojiname
 				if (input.nameFilter != string.Empty)
@@ -702,7 +707,7 @@ namespace KidesServer.Logic
 						  FROM messages 
 						  WHERE NOT isDeleted AND userId != @botId AND mesTime > @startDate) x
 						  WHERE txt != '' AND txt NOT LIKE '%@botId%'";
-			await DataLayerShortcut.ExecuteReader<List<MessageTextModel>>(ReadMessagesText, result, query,
+			await DataLayerShortcut.ExecuteReader<List<MessageTextModel>>(ReadMessagesText, result, AppConfig.Config.DBConfig.ConnectionString, query,
 				new MySqlParameter("@botId", AppConfig.Config.botId), new MySqlParameter("@startDate", startDate ?? DateTime.MinValue));
 
 			GeneralCache.NewCacheObject("MessageTextCache", $"MessageTextList{(startDate.HasValue ? startDate.Value.Ticks.ToString() : "0")}", result, new TimeSpan(12, 0, 0));
@@ -733,8 +738,10 @@ namespace KidesServer.Logic
 				result.results = new List<DiscordStatRow>();
 				var query = "SELECT * FROM stats WHERE statType=@statType AND serverId=@serverId AND dateGroup=@dateGroup AND statTime BETWEEN @startDate AND @endDate";
 				var readRows = new List<DiscordStatRow>();
-				await DataLayerShortcut.ExecuteReader(ReadServerStats, readRows, query, new MySqlParameter("@statType", input.statType), new MySqlParameter("@serverId", input.serverId), 
-					new MySqlParameter("@startDate", input.startDate.ToUniversalTime()), new MySqlParameter("@endDate", input.endDate ?? DateTime.UtcNow.ToUniversalTime()), new MySqlParameter("@dateGroup", input.dateGroup));
+				await DataLayerShortcut.ExecuteReader(ReadServerStats, readRows, AppConfig.Config.DBConfig.ConnectionString, query, 
+					new MySqlParameter("@statType", input.statType), new MySqlParameter("@serverId", input.serverId), 
+					new MySqlParameter("@startDate", input.startDate.ToUniversalTime()), new MySqlParameter("@endDate", input.endDate ?? DateTime.UtcNow.ToUniversalTime()), 
+					new MySqlParameter("@dateGroup", input.dateGroup));
 				var statDict = new Dictionary<DateTime, List<long>>();
 				foreach (var res in readRows)
 				{

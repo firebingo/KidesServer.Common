@@ -2,7 +2,7 @@
 using MySql.Data.MySqlClient;
 using System.Data;
 
-namespace KidesServer.DataBase
+namespace KidesServer.Common.DataBase
 {
 	public static class DataHelper
 	{	
