@@ -16,7 +16,11 @@ namespace Symphogames.Logic
 		public GamesThread(SGame game)
 		{
 			_threadGame = game;
-			_timer = new Timer(SymphogamesConfig.Config.GameTickMs)
+		}
+
+		public async Task StartThread()
+		{
+			_timer = new Timer((await SymphogamesConfig.GetConfig()).GameTickMs)
 			{
 				AutoReset = false,
 				Enabled = false,
@@ -156,7 +160,7 @@ namespace Symphogames.Logic
 			return;
 		}
 
-		public void DestroyThread()
+		public void StopThread()
 		{
 			_timer.Enabled = false;
 			_timer.Stop();

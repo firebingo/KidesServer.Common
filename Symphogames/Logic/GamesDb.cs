@@ -25,6 +25,11 @@ namespace Symphogames.Logic
 			return Task.CompletedTask;
 		}
 
+		public static Task<SPlayer> GetPlayerByName(string name)
+		{
+			return Task.FromResult(Players.FirstOrDefault(x => x.Value.Name.ToUpperInvariant() == name.ToUpperInvariant()).Value);
+		}
+
 		public static Task<uint> GetNextGameId()
 		{
 			return Task.FromResult(_nextGameId++);

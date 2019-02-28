@@ -64,11 +64,11 @@ namespace Symphogames.Logic
 			}
 		}
 
-		public static async Task<CurrentGamePlayerInfo> GetCurrentPlayerInfo(uint gameId, uint playerId, string accessguid)
+		public static async Task<CurrentGamePlayerInfo> GetCurrentPlayerInfo(uint gameId, uint playerId)
 		{
 			try
 			{
-				var res = await SymphogamesStorage.GetCurrentPlayerInfo(gameId, playerId, accessguid);
+				var res = await SymphogamesStorage.GetCurrentPlayerInfo(gameId, playerId);
 				return res;
 			}
 			catch(Exception ex)
@@ -78,11 +78,11 @@ namespace Symphogames.Logic
 			}
 		}
 
-		public static async Task<BaseResult> SubmitTurn(uint gameId, uint playerId, string accessguid, SActionInfo action)
+		public static async Task<BaseResult> SubmitTurn(uint gameId, uint playerId, SActionInfo action)
 		{
 			try
 			{
-				var res = await SymphogamesStorage.SubmitTurn(gameId, playerId, accessguid, action);
+				var res = await SymphogamesStorage.SubmitTurn(gameId, playerId, action);
 				return res;
 			}
 			catch (Exception ex)

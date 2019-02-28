@@ -20,4 +20,10 @@ namespace Symphogames.Models
 		public string Name;
 		public List<uint> PlayerIds;
 	}
+
+	public class AuthenticateInput
+	{
+		public string Username;
+		public string Password;
+	}
 }

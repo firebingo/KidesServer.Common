@@ -9,6 +9,13 @@ using System.Threading.Tasks;
 
 namespace Symphogames.Models
 {
+	public enum PlayerRole
+	{
+		Admin,
+		Moderator,
+		Player
+	}
+
 	public enum SPlayerState
 	{
 		Awake,
@@ -22,6 +29,8 @@ namespace Symphogames.Models
 		public string Name { get; private set; }
 		private string Password;
 		private readonly string Salt;
+		public bool IsVerified { get; private set; }
+		public PlayerRole Role { get; private set; }
 		public string Avatar;
 		public readonly SPlayerHistory History;
 
@@ -43,6 +52,19 @@ namespace Symphogames.Models
 			Name = iN;
 			Salt = Guid.NewGuid().ToString("n");
 			Avatar = "default";
+			IsVerified = false;
+			Role = PlayerRole.Player;
+		}
+
+		public SPlayer(uint id, string iN, string iS, string IA, string iP, bool iV, PlayerRole iR)
+		{
+			Id = id;
+			Name = iN;
+			Salt = iS;
+			Avatar = IA;
+			Password = iP;
+			IsVerified = iV;
+			Role = iR;
 		}
 
 		public Task ChangeName(string iN)
@@ -51,19 +73,46 @@ namespace Symphogames.Models
 			return Task.CompletedTask;
 		}
 
-		public Task SetPassword(string pass)
+		public async Task SetPassword(string pass)
 		{
 			StringBuilder builder = new StringBuilder();
 			using (var hash = SHA256.Create())
 			{
-				var result = hash.ComputeHash(Encoding.UTF8.GetBytes($"{Salt}{pass}{SymphogamesConfig.Config.HashPepper ?? "478ab"}"));
+				var hashResult = hash.ComputeHash(Encoding.UTF8.GetBytes($"{Salt}{pass}{(await SymphogamesConfig.GetConfig()).HashPepper ?? "478ab"}"));
 
-				foreach (var b in result) {
+				foreach (var b in hashResult) {
 					builder.Append(b.ToString("x2"));
 				}
 			}
 
 			Password = builder.ToString();
+		}
+
+		public async Task<bool> CheckLogin(string pass)
+		{
+			if (!IsVerified)
+				return false;
+
+			StringBuilder builder = new StringBuilder();
+			using (var hash = SHA256.Create())
+			{
+				var hashResult = hash.ComputeHash(Encoding.UTF8.GetBytes($"{Salt}{pass}{(await SymphogamesConfig.GetConfig()).HashPepper ?? "478ab"}"));
+
+				foreach (var b in hashResult)
+				{
+					builder.Append(b.ToString("x2"));
+				}
+			}
+
+			if(builder.ToString() == Password)
+				return true;
+
+			return false;
+		}
+
+		public Task VerifyUser()
+		{
+			IsVerified = true;
 			return Task.CompletedTask;
 		}
 	}
@@ -71,7 +120,6 @@ namespace Symphogames.Models
 	public class SGamePlayer
 	{
 		public readonly SPlayer Player;
-		public readonly string AccessGuid; //Used for api calls
 		public readonly uint DistrictId;
 		public List<SKillRecord> Kills;
 		public Vector2<int> Position;
@@ -98,7 +146,6 @@ namespace Symphogames.Models
 			Player = player;
 			Kills = new List<SKillRecord>();
 			Position = pos;
-			AccessGuid = Guid.NewGuid().ToString();
 		}
 	}
 

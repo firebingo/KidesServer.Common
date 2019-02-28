@@ -25,6 +25,7 @@ namespace KidesServer.Common
 		public string address;
 		public string port;
 		public string schemaName;
+		public string hashPepper = "478ab";
 		private string _connectionString;
 		[JsonIgnore]
 		public string ConnectionString

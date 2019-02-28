@@ -21,7 +21,7 @@ namespace Symphogames.Logic
 			_gameThreads = new ConcurrentDictionary<uint, GamesThread>();
 		}
 
-		public static Task<UIntResult> CreateGame(uint id, string name, string image, int width, int height, List<DistrictInput> districts, int? seed = null)
+		public static async Task<UIntResult> CreateGame(uint id, string name, string image, int width, int height, List<DistrictInput> districts, int? seed = null)
 		{
 			var res = new UIntResult();
 			var game = new SGame(id, name, width, height, seed ?? (int)(id + name.ToCharArray().Sum(x => x) + width + height + districts.Count + DateTime.UtcNow.Millisecond));
@@ -31,7 +31,7 @@ namespace Symphogames.Logic
 				foreach (var p in districts[i].PlayerIds)
 				{
 					if (!GamesDb.Players.ContainsKey(p))
-						return Task.FromResult(new UIntResult { message = $"USER_NOT_EXIST|{p}" });
+						return new UIntResult { message = $"USER_NOT_EXIST|{p}" };
 					var newPlayer = new SGamePlayer(GamesDb.Players[p], (uint)i, new Vector2<int>(0, 0));
 					dPlayers.Add(p, newPlayer);
 				}
@@ -39,7 +39,9 @@ namespace Symphogames.Logic
 				game.AddDistrict(newDist);
 			}
 			CurrentGames.TryAdd(id, game);
-			_gameThreads.TryAdd(id, new GamesThread(game));
+			var newThread = new GamesThread(game);
+			_gameThreads.TryAdd(id, newThread);
+			await newThread.StartThread();
 			if (Uri.TryCreate(image, UriKind.Absolute, out var u))
 				game.Map.MapImage = image;
 			else
@@ -50,7 +52,7 @@ namespace Symphogames.Logic
 			res.success = true;
 			res.message = string.Empty;
 			res.value = game.Id;
-			return Task.FromResult(res);
+			return res;
 		}
 
 		public static Task<JoinGameResult> GetPlayerAccessData(uint gameId, uint playerId)
@@ -66,14 +68,13 @@ namespace Symphogames.Logic
 
 			res.GameId = currentGame.Id;
 			res.PlayerId = gamePlayer.Player.Id;
-			res.AccessGuid = gamePlayer.AccessGuid;
 			res.success = true;
 			res.message = string.Empty;
 
 			return Task.FromResult(res);
 		}
 
-		public static Task<CurrentGamePlayerInfo> GetCurrentPlayerInfo(uint gameId, uint playerId, string accessguid)
+		public static Task<CurrentGamePlayerInfo> GetCurrentPlayerInfo(uint gameId, uint playerId)
 		{
 			var res = new CurrentGamePlayerInfo();
 			if (!CurrentGames.ContainsKey(gameId))
@@ -82,8 +83,6 @@ namespace Symphogames.Logic
 			var gamePlayer = currentGame.GetPlayerById(playerId);
 			if (gamePlayer == null)
 				return Task.FromResult(new CurrentGamePlayerInfo { message = $"USER_NOT_EXIST|{playerId}" });
-			if (gamePlayer.AccessGuid != accessguid)
-				return Task.FromResult(new CurrentGamePlayerInfo { message = $"INVALID_ACCESS" });
 
 			res.GameInfo = new SGameInfo()
 			{
@@ -192,11 +191,12 @@ namespace Symphogames.Logic
 				}
 			}
 		}
-		public static async Task<BaseResult> SubmitTurn(uint gameId, uint playerId, string accessguid, SActionInfo action)
+
+		public static async Task<BaseResult> SubmitTurn(uint gameId, uint playerId, SActionInfo action)
 		{
 			var res = new BaseResult();
 
-			var gameInfo = await GetCurrentPlayerInfo(gameId, playerId, accessguid);
+			var gameInfo = await GetCurrentPlayerInfo(gameId, playerId);
 			if (!gameInfo.success)
 				return new BaseResult() { message = gameInfo.message };
 

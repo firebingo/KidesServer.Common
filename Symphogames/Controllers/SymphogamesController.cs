@@ -1,10 +1,12 @@
 ﻿using KidesServer.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Symphogames.Logic;
 using Symphogames.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace KidesServer.Controllers
@@ -14,9 +16,13 @@ namespace KidesServer.Controllers
 	public class SymphogamesController : ControllerBase
 	{
 		[Returns(typeof(UIntResult))]
+		[Authorize]
 		[HttpPost, Route("create-player")]
 		public async Task<IActionResult> CreatePlayer([FromQuery]string playerName)
 		{
+			var claim = User.Identity as ClaimsIdentity;
+			var role = Enum.Parse(typeof(PlayerRole), claim.FindFirst(ClaimTypes.Role).Value);
+
 			var result = await GamesLogic.CreatePlayer(playerName);
 			
 			if (result.success)
@@ -38,6 +44,7 @@ namespace KidesServer.Controllers
 		//}
 
 		[Returns(typeof(UIntResult))]
+		[Authorize]
 		[HttpPost, Route("create-game")]
 		public async Task<IActionResult> CreateGame([FromBody]CreateGameInput input)
 		{
@@ -50,6 +57,7 @@ namespace KidesServer.Controllers
 		}
 
 		[Returns(typeof(JoinGameResult))]
+		[Authorize]
 		[HttpGet, Route("join-game")]
 		public async Task<IActionResult> Join([FromQuery]uint gameId, [FromQuery]uint playerId)
 		{
@@ -62,10 +70,13 @@ namespace KidesServer.Controllers
 		}
 
 		[Returns(typeof(CurrentGamePlayerInfo))]
+		[Authorize]
 		[HttpGet, Route("current-player-game-info")]
-		public async Task<IActionResult> GetCurrentPlayerInfo([FromQuery]uint gameId, [FromQuery]uint playerId, [FromQuery]string accessguid)
+		public async Task<IActionResult> GetCurrentPlayerInfo([FromQuery]uint gameId)
 		{
-			var result = await GamesLogic.GetCurrentPlayerInfo(gameId, playerId, accessguid);
+			var claim = User.Identity as ClaimsIdentity;
+			var pId = uint.Parse(claim.FindFirst(ClaimTypes.Name).Value);
+			var result = await GamesLogic.GetCurrentPlayerInfo(gameId, pId);
 
 			if (result.success)
 				return Ok(result);
@@ -74,10 +85,13 @@ namespace KidesServer.Controllers
 		}
 
 		[Returns(typeof(BaseResult))]
+		[Authorize]
 		[HttpPost, Route("submit-turn")]
-		public async Task<IActionResult> SubmitTurn([FromQuery]uint gameId, [FromQuery]uint playerId, [FromQuery]string accessguid, [FromBody]SActionInfo action)
+		public async Task<IActionResult> SubmitTurn([FromQuery]uint gameId, [FromBody]SActionInfo action)
 		{
-			var result = await GamesLogic.SubmitTurn(gameId, playerId, accessguid, action);
+			var claim = User.Identity as ClaimsIdentity;
+			var pId = uint.Parse(claim.FindFirst(ClaimTypes.Name).Value);
+			var result = await GamesLogic.SubmitTurn(gameId, pId, action);
 
 			if (result.success)
 				return Ok(result);
@@ -86,6 +100,7 @@ namespace KidesServer.Controllers
 		}
 
 		[Returns(typeof(PhysicalFileResult))]
+		[Authorize]
 		[HttpGet, Route("image")]
 		public IActionResult GetImage([FromQuery]SImageType type, [FromQuery]string name)
 		{

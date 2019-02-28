@@ -11,7 +11,6 @@ namespace Symphogames.Models
 	{
 		public uint GameId;
 		public uint PlayerId;
-		public string AccessGuid;
 	}
 
 	[Serializable]
@@ -27,6 +26,12 @@ namespace Symphogames.Models
 		public SMapInfo MapInfo;
 		public SPlayersInfo PlayerInfo;
 		public List<SActionInfo> ActionInfo;
+	}
+
+	[Serializable]
+	public class AuthenticateResult : BaseResult
+	{
+		public User User;
 	}
 
 	[Serializable]

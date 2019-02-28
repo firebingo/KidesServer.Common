@@ -66,39 +66,32 @@ namespace KidesServer.Common.DataBase
 			}
 		}
 
-		public static async Task<string> ExecuteNonQuery(string connectionString, string query, params MySqlParameter[] parameters)
+		public static async Task ExecuteNonQuery(string connectionString, string query, params MySqlParameter[] parameters)
 		{
-			var result = string.Empty;
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				await connection.OpenAsync();
-				result = await ExecuteNonQuery(connection, query, parameters);
+				await ExecuteNonQuery(connection, query, parameters);
 				await connection.CloseAsync();
 			}
-			return result;
 		}
 
-		public static async Task<string> ExecuteNonQuery(MySqlConnection connection, string query, params MySqlParameter[] parameters)
+		public static async Task ExecuteNonQuery(MySqlConnection connection, string query, params MySqlParameter[] parameters)
 		{
-			try
-			{
-				if (connection.State == ConnectionState.Open)
-				{
-					MySqlCommand cmd = new MySqlCommand(query, connection)
-					{
-						CommandType = CommandType.Text
-					};
-					if (parameters != null)
-						DataHelper.AddParams(ref cmd, parameters);
+			if (connection == null)
+				return;
 
-					await cmd.ExecuteNonQueryAsync();
-					cmd.Dispose();
-				}
-				return string.Empty;
-			}
-			catch (Exception e)
+			if (connection.State == ConnectionState.Open)
 			{
-				return $"Exception: {e.Message}, Query: {query}";
+				MySqlCommand cmd = new MySqlCommand(query, connection)
+				{
+					CommandType = CommandType.Text
+				};
+				if (parameters != null)
+					DataHelper.AddParams(ref cmd, parameters);
+
+				await cmd.ExecuteNonQueryAsync();
+				cmd.Dispose();
 			}
 		}
 
@@ -116,6 +109,9 @@ namespace KidesServer.Common.DataBase
 
 		public static async Task<int?> ExecuteScalar(MySqlConnection connection, string query, params MySqlParameter[] parameters)
 		{
+			if (connection == null)
+				return null;
+
 			int? result = null;
 			if (connection.State == ConnectionState.Open)
 			{
