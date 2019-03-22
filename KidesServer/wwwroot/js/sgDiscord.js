@@ -261,7 +261,7 @@ function buildMessageRoleList(data) {
 	for(var i = 0; i < data.length; ++i) {
 		var item = data[i];
 		html += '\
-		<tr class="' + (item.isDeleted ? 'user-removed-row' : '') + (item.isBanned ? 'user-banned-row' : '') + '">\
+		<tr class="' + (item.isDeleted ? 'user-removed-row ' : '') + (item.isBanned ? 'user-banned-row' : '') + '">\
 			<td class="list-table-cell cell-clickable"\
 			onclick="loadUserInfo(\'' + item.userId + '\')">' + item.userName + '</td>\
 			<td class="list-table-cell">' + item.rank + '</td>\
