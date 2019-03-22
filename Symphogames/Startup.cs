@@ -20,10 +20,14 @@ namespace Symphogames
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+		IHostingEnvironment _env;
+
+        public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
             Configuration = configuration;
-        }
+			_env = env;
+
+		}
 
         public IConfiguration Configuration { get; }
 
@@ -37,7 +41,9 @@ namespace Symphogames
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+
+			AppDomain.CurrentDomain.SetData("DataDirectory", System.IO.Path.Combine(_env.ContentRootPath, "App_Data"));
 
 			//This is probably a bad way to do this but this is how I load the config for now and this should help prevent the theoretical deadlock.
 			//TODO: investigate config being based on proper ASP.NET AppSettings and making literally everything else services also.
@@ -79,8 +85,6 @@ namespace Symphogames
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
-
-            AppDomain.CurrentDomain.SetData("DataDirectory", System.IO.Path.Combine(env.ContentRootPath, "App_Data"));
 
             //app.UseHttpsRedirection();
             app.UseStaticFiles();

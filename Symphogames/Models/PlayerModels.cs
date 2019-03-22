@@ -28,7 +28,7 @@ namespace Symphogames.Models
 		public readonly uint Id;
 		public string Name { get; private set; }
 		private string Password;
-		private readonly string Salt;
+		private string Salt;
 		public bool IsVerified { get; private set; }
 		public PlayerRole Role { get; private set; }
 		public string Avatar;

@@ -95,24 +95,24 @@ namespace KidesServer.Common.DataBase
 			}
 		}
 
-		public static async Task<int?> ExecuteScalar(string connectionString, string query, params MySqlParameter[] parameters)
+		public static async Task<T> ExecuteScalar<T>(string connectionString, string query, params MySqlParameter[] parameters)
 		{
-			int? result = null;
+			T result = default;
 			using (var connection = new MySqlConnection(connectionString))
 			{
 				await connection.OpenAsync();
-				result = await ExecuteScalar(connection, query, parameters);
+				result = await ExecuteScalar<T>(connection, query, parameters);
 				await connection.CloseAsync();
 			}
 			return result;
 		}
 
-		public static async Task<int?> ExecuteScalar(MySqlConnection connection, string query, params MySqlParameter[] parameters)
+		public static async Task<T> ExecuteScalar<T>(MySqlConnection connection, string query, params MySqlParameter[] parameters)
 		{
 			if (connection == null)
-				return null;
+				return default;
 
-			int? result = null;
+			T result = default;
 			if (connection.State == ConnectionState.Open)
 			{
 				MySqlCommand cmd = new MySqlCommand(query, connection)
@@ -125,7 +125,18 @@ namespace KidesServer.Common.DataBase
 				object scalar = await cmd.ExecuteScalarAsync();
 				try
 				{
-					result = Convert.ToInt32(scalar);
+					switch (result)
+					{
+						case int i:
+							result = (T)Convert.ChangeType(Convert.ToInt32(scalar), typeof(T));
+							break;
+						case uint i:
+							result = (T)Convert.ChangeType(Convert.ToUInt32(scalar), typeof(T));
+							break;
+						default:
+							result = (T)Convert.ChangeType(scalar, typeof(T));
+							break;
+					}
 				}
 				catch
 				{

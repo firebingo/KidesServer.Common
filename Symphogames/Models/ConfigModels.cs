@@ -6,7 +6,7 @@ namespace Symphogames.Models
     {
         public string HashPepper = "478ab";
 		public string JwtKey = "8hgbi";
-		public int GameTickMs = 2500;
-		public int ConfigExpireMs = 1000 * 60 * 15;
+		public uint GameTickMs = 2500;
+		public uint ConfigExpireMs = 1000 * 60 * 15;
     }
 }

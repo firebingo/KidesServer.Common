@@ -1,4 +1,6 @@
-﻿using Symphogames;
+﻿using KidesServer.Common.DataBase;
+using Symphogames;
+using Symphogames.Helpers;
 using Symphogames.Models;
 using System;
 using System.Collections.Concurrent;
@@ -35,9 +37,10 @@ namespace Symphogames.Logic
 			return Task.FromResult(_nextGameId++);
 		}
 
-		public static Task<uint> GetNextPlayerId()
+		public static async Task<uint> GetNextPlayerId()
 		{
-			return Task.FromResult(_nextPlayerId++);
+			var sql = "SELECT AUTO_INCREMENT FROM players";
+			return await DataLayerShortcut.ExecuteScalar<uint>(SymphogamesConfig.DbConfig.ConnectionString, sql);
 		}
 	}
 }

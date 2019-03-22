@@ -72,9 +72,9 @@ namespace Symphogames.Helpers
 		private static void ReadConfig(IDataReader reader, SymphogamesConfigModel data)
 		{
 			data.HashPepper = _dbConfig.hashPepper;
-			data.JwtKey = reader.GetString(0);
-			data.GameTickMs = reader.GetInt32(1);
-			data.ConfigExpireMs = reader.GetInt32(2);
+			data.JwtKey = reader.GetString(2);
+			data.GameTickMs = (reader[3] as uint?).Value;
+			data.ConfigExpireMs = (reader[4] as uint?).Value;
 		}
 	}
 }
