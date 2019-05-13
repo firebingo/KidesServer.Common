@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /*.json
+Disallow: /*.min.json
+Disallow: /js/*.json
+Disallow: /js/*.min.json
+
+Sitemap: https://server.icebingo.io/
