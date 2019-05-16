@@ -383,7 +383,7 @@ namespace KidesServer.Logic
 									 GROUP BY emojiID
 									 ORDER BY emCount DESC) prequery) mainquery
 									 ORDER BY {EmojiListSortOrderToParam(input.sort, input.isDesc)}";
-				await DataLayerShortcut.ExecuteReader<List<DiscordEmojiListRow>>(ReadEmojiList, result.results, queryString, AppConfig.Config.DBConfig.ConnectionString,
+				await DataLayerShortcut.ExecuteReader<List<DiscordEmojiListRow>>(ReadEmojiList, result.results, AppConfig.Config.DBConfig.ConnectionString, queryString,
 					new MySqlParameter("@serverId", input.serverId), new MySqlParameter("@startDate", input.startDate), new MySqlParameter("@botId", AppConfig.Config.botId), 
 					new MySqlParameter("@userID", (input.userFilterId ?? 0)));
 
