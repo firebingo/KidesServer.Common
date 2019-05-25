@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.2</TargetFramework>
@@ -14,11 +14,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Remove="appsettings.Debug.json" />
+    <Content Remove="appsettings.Release.json" />
     <Content Remove="wwwroot\symphogames-react\package-lock.json" />
     <Content Remove="wwwroot\symphogames-react\package.json" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="appsettings.Debug.json"></None>
+    <None Include="appsettings.Release.json"></None>
     <None Include="wwwroot\symphogames-react\package-lock.json" />
     <None Include="wwwroot\symphogames-react\package.json" />
   </ItemGroup>
@@ -35,6 +39,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Content>
     <Content Update="Views\Home\root.cshtml">
       <Pack>$(IncludeRazorContentInPack)</Pack>
     </Content>

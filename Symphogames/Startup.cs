@@ -20,16 +20,14 @@ namespace Symphogames
 {
     public class Startup
     {
-		IHostingEnvironment _env;
+		private readonly IHostingEnvironment _env;
+		public IConfiguration Configuration { get; private set; }
 
-        public Startup(IConfiguration configuration, IHostingEnvironment env)
+		public Startup(IConfiguration configuration, IHostingEnvironment env)
         {
-            Configuration = configuration;
 			_env = env;
-
+			Configuration = configuration;
 		}
-
-        public IConfiguration Configuration { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -45,10 +43,13 @@ namespace Symphogames
 
 			AppDomain.CurrentDomain.SetData("DataDirectory", System.IO.Path.Combine(_env.ContentRootPath, "App_Data"));
 
-			//This is probably a bad way to do this but this is how I load the config for now and this should help prevent the theoretical deadlock.
-			//TODO: investigate config being based on proper ASP.NET AppSettings and making literally everything else services also.
-			Task.Run(() => SymphogamesConfig.GetConfig()).Wait();
-			var key = Encoding.ASCII.GetBytes(SymphogamesConfig.GetConfig().Result.JwtKey);
+			services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
+
+			var config = Configuration.GetSection("AppSettings").Get<AppSettings>();
+			var key = Encoding.UTF8.GetBytes(config.Security.JwtKey);
+
+			services.AddSingleton<SymphogamesConfigService>();
+
 			services.AddAuthentication(x =>
 			{
 				x.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

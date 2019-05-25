@@ -40,7 +40,7 @@ namespace Symphogames.Logic
 		public static async Task<uint> GetNextPlayerId()
 		{
 			var sql = "SELECT AUTO_INCREMENT FROM players";
-			return await DataLayerShortcut.ExecuteScalar<uint>(SymphogamesConfig.DbConfig.ConnectionString, sql);
+			return await DataLayerShortcut.ExecuteScalarAsync<uint>(SymphogamesConfig.DbConfig.ConnectionString, sql);
 		}
 	}
 }

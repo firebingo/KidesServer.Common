@@ -10,15 +10,31 @@ using Microsoft.Extensions.Logging;
 
 namespace Symphogames
 {
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            CreateWebHostBuilder(args).Build().Run();
-        }
+	public class Symphogames
+	{
+		public static string envName { get; private set; } = "Debug";
 
-        public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-            WebHost.CreateDefaultBuilder(args)
-                .UseStartup<Startup>();
-    }
+		public static void Main(string[] args)
+		{
+
+#if Debug
+			envName = "Debug"
+#elif Release
+			envName = "Release"
+#endif
+
+			CreateWebHostBuilder(args).Build().Run();
+		}
+
+		public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
+			WebHost.CreateDefaultBuilder(args)
+				.UseKestrel()
+				.UseEnvironment(envName)
+				.UseContentRoot(Directory.GetCurrentDirectory())
+				.ConfigureAppConfiguration((builderContext, config) =>
+				{
+					 config.AddJsonFile($"appsettings.{envName}.json", optional: false, reloadOnChange: true);
+				})
+				.UseStartup<Startup>();
+	}
 }
