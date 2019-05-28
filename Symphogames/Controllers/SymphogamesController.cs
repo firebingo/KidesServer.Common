@@ -1,8 +1,11 @@
 ﻿using KidesServer.Common;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Symphogames;
 using Symphogames.Logic;
 using Symphogames.Models;
+using Symphogames.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,6 +18,16 @@ namespace KidesServer.Controllers
 	[ApiController]
 	public class SymphogamesController : ControllerBase
 	{
+		private readonly AppSettings _appSettings;
+		private readonly PlayerService _playerService;
+
+		public SymphogamesController(IOptions<AppSettings> appSettings,
+			PlayerService playerService)
+		{
+			_playerService = playerService;
+			_appSettings = appSettings.Value;
+		}
+
 		[Returns(typeof(UIntResult))]
 		[Authorize]
 		[HttpPost, Route("create-player")]
@@ -23,7 +36,7 @@ namespace KidesServer.Controllers
 			var claim = User.Identity as ClaimsIdentity;
 			var role = Enum.Parse(typeof(PlayerRole), claim.FindFirst(ClaimTypes.Role).Value);
 
-			var result = await GamesLogic.CreatePlayer(playerName);
+			var result = await _playerService.CreatePlayer(playerName);
 			
 			if (result.success)
 				return Ok(result);

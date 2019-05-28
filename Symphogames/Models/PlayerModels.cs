@@ -26,12 +26,12 @@ namespace Symphogames.Models
 	public class SPlayer
 	{
 		public readonly uint Id;
-		public string Name { get; private set; }
-		private string Password;
-		private string Salt;
-		public bool IsVerified { get; private set; }
-		public PlayerRole Role { get; private set; }
-		public string Avatar;
+		public readonly string Name;
+		public readonly string Password;
+		public readonly string Salt;
+		public readonly bool IsVerified;
+		public readonly PlayerRole Role;
+		public readonly string Avatar;
 		public readonly SPlayerHistory History;
 
 		public string AvatarUrl
@@ -39,81 +39,31 @@ namespace Symphogames.Models
 			get
 			{
 				if(Uri.TryCreate(Avatar, UriKind.Absolute, out var u))
-				{
-					return Avatar;
-				}
+					return u.ToString();
+
 				return $"/api/v1/symphogames/image?type=1&name={Avatar}";
 			}
 		}
 
-		public SPlayer(uint id, string iN)
+		public SPlayer(uint id, string iName)
 		{
 			Id = id;
-			Name = iN;
+			Name = iName;
 			Salt = Guid.NewGuid().ToString("n");
 			Avatar = "default";
 			IsVerified = false;
 			Role = PlayerRole.Player;
 		}
 
-		public SPlayer(uint id, string iN, string iS, string IA, string iP, bool iV, PlayerRole iR)
+		public SPlayer(uint id, string iName, string iSalt, string IAvatar, string iPassword, bool iVerified, PlayerRole iRole)
 		{
 			Id = id;
-			Name = iN;
-			Salt = iS;
-			Avatar = IA;
-			Password = iP;
-			IsVerified = iV;
-			Role = iR;
-		}
-
-		public Task ChangeName(string iN)
-		{
-			Name = iN;
-			return Task.CompletedTask;
-		}
-
-		public async Task SetPassword(string pass)
-		{
-			StringBuilder builder = new StringBuilder();
-			using (var hash = SHA256.Create())
-			{
-				var hashResult = hash.ComputeHash(Encoding.UTF8.GetBytes($"{Salt}{pass}{(await SymphogamesConfig.GetConfig()).HashPepper ?? "478ab"}"));
-
-				foreach (var b in hashResult) {
-					builder.Append(b.ToString("x2"));
-				}
-			}
-
-			Password = builder.ToString();
-		}
-
-		public async Task<bool> CheckLogin(string pass)
-		{
-			if (!IsVerified)
-				return false;
-
-			StringBuilder builder = new StringBuilder();
-			using (var hash = SHA256.Create())
-			{
-				var hashResult = hash.ComputeHash(Encoding.UTF8.GetBytes($"{Salt}{pass}{(await SymphogamesConfig.GetConfig()).HashPepper ?? "478ab"}"));
-
-				foreach (var b in hashResult)
-				{
-					builder.Append(b.ToString("x2"));
-				}
-			}
-
-			if(builder.ToString() == Password)
-				return true;
-
-			return false;
-		}
-
-		public Task VerifyUser()
-		{
-			IsVerified = true;
-			return Task.CompletedTask;
+			Name = iName;
+			Salt = iSalt;
+			Avatar = IAvatar;
+			Password = iPassword;
+			IsVerified = iVerified;
+			Role = iRole;
 		}
 	}
 

@@ -10,6 +10,7 @@ namespace Symphogames
 	{
 		public DbConfig Database { get; set; }
 		public SecurityConfig Security { get; set; }
+		public CacheConfig Cache { get; set; }
 	}
 
 	public class SecurityConfig
@@ -36,5 +37,11 @@ namespace Symphogames
 				return _connectionString;
 			}
 		}
+	}
+
+	public class CacheConfig
+	{
+		public Dictionary<string, string> Keys { get; set; }
+		public Dictionary<string, uint> Time { get; set; }
 	}
 }

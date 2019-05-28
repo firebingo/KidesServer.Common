@@ -1,5 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
-using Symphogames.Helpers;
+﻿using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Symphogames.Models;
 using System;
 using System.Collections.Generic;
@@ -9,26 +9,40 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Symphogames.Logic
+namespace Symphogames.Services
 {
-	public static class LoginLogic
+	public class LoginService
 	{
-		public static async Task<AuthenticateResult> Authenticate(AuthenticateInput authInput)
+		private readonly AppSettings _appSettings;
+		private readonly PlayerService _playerService;
+
+		public LoginService(IOptions<AppSettings> appSettings,
+			PlayerService playerService)
+		{
+			_playerService = playerService;
+			_appSettings = appSettings.Value;
+		}
+
+		public async Task<AuthenticateResult> Authenticate(AuthenticateInput authInput)
 		{
 			var result = new AuthenticateResult
 			{
 				User = new User()
 			};
-			var player = await GamesDb.GetPlayerByName(authInput.Username);
+			var player = await _playerService.GetPlayerByName(authInput.Username);
 
-			if (player == null || !await player.CheckLogin(authInput.Password))
-				return null;
+			if (player == null)
+				return new AuthenticateResult() { success = false, message = "USER_NOT_EXIST" };
+
+			var loginResult = await _playerService.CheckPlayerLogin(player.Id, authInput.Password);
+			if (loginResult.success)
+				return new AuthenticateResult() { success = false, message = loginResult.message };
 
 			result.User.Username = player.Name;
 			result.User.Id = player.Id;
 
 			var tokenHandler = new JwtSecurityTokenHandler();
-			var key = Encoding.ASCII.GetBytes((await SymphogamesConfig.GetConfig()).JwtKey);
+			var key = Encoding.ASCII.GetBytes(_appSettings.Security.JwtKey);
 			var tokenDescriptor = new SecurityTokenDescriptor
 			{
 				Subject = new ClaimsIdentity(new Claim[]
@@ -45,7 +59,5 @@ namespace Symphogames.Logic
 
 			return result;
 		}
-
-		//public static async 
 	}
 }

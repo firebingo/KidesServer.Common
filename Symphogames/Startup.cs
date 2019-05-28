@@ -15,6 +15,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Symphogames.Helpers;
 using Symphogames.Models;
+using Symphogames.Services;
 
 namespace Symphogames
 {
@@ -48,7 +49,12 @@ namespace Symphogames
 			var config = Configuration.GetSection("AppSettings").Get<AppSettings>();
 			var key = Encoding.UTF8.GetBytes(config.Security.JwtKey);
 
+			services.AddMemoryCache();
+
 			services.AddSingleton<SymphogamesConfigService>();
+			services.AddScoped<LoginService>();
+			services.AddScoped<PlayerService>();
+			services.AddSingleton<GameService>();
 
 			services.AddAuthentication(x =>
 			{

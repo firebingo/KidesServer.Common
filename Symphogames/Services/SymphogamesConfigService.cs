@@ -17,7 +17,7 @@ namespace Symphogames.Helpers
 		//public static string folderLocation = string.Empty;
 		private SymphogamesConfigModel _config;
 		private DateTime _configExpire;
-		private AppSettings _appSettings;
+		private readonly AppSettings _appSettings;
 
 		public SymphogamesConfigService(IOptions<AppSettings> appSettings)
 		{
@@ -61,7 +61,7 @@ namespace Symphogames.Helpers
 				{
 					var query = "SELECT * FROM gamesconfig LIMIT 1";
 					SymphogamesConfigModel cfg = new SymphogamesConfigModel();
-					await DataLayerShortcut.ExecuteReaderAsync(ReadConfig, cfg, _appSettings.Database.ConnectionString, query);
+					await DataLayerShortcut.ExecuteReaderAsync(ReadConfigAsync, cfg, _appSettings.Database.ConnectionString, query);
 					_config = cfg;
 					_configExpire = DateTime.UtcNow.AddMilliseconds(cfg.ConfigExpireMs);
 				}
@@ -76,10 +76,15 @@ namespace Symphogames.Helpers
 
 		private void ReadConfig(IDataReader reader, SymphogamesConfigModel data)
 		{
-			data.HashPepper = _appSettings.Security.HashPepper;
-			data.JwtKey = reader.GetString(2);
 			data.GameTickMs = (reader[3] as uint?).Value;
 			data.ConfigExpireMs = (reader[4] as uint?).Value;
+		}
+
+		private Task ReadConfigAsync(IDataReader reader, SymphogamesConfigModel data)
+		{
+			data.GameTickMs = (reader[3] as uint?).Value;
+			data.ConfigExpireMs = (reader[4] as uint?).Value;
+			return Task.CompletedTask;
 		}
 	}
 }

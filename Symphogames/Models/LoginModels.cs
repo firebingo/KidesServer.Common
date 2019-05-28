@@ -11,4 +11,9 @@ namespace Symphogames.Models
 		public string Username;
 		public string Token;
 	}
+
+	public class AuthorizeRoleAttribute : Attribute
+	{
+
+	}
 }
