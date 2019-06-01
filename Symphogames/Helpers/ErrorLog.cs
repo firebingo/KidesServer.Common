@@ -54,7 +54,7 @@ namespace Symphogames.Helpers
 					using (var writer = File.AppendText(path))
 					{
 						var fullDateString = now.ToString("[yyyy-MM-dd hh:mm:ss]");
-						writer.WriteLine($"{fullDateString} - Message: {e.Message}, Stack Trace: {e.StackTrace}");
+						writer.WriteLine($"{fullDateString} - Exception - Message: {e.Message}, Stack Trace: {e.StackTrace}");
 					}
 				}
 			}

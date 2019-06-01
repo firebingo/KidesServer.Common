@@ -10,12 +10,12 @@ namespace KidesServer.Common
 
 	public class UIntResult : BaseResult
 	{
-		public ulong value;
+		public uint? value;
 	}
 
 	public class ULongResult : BaseResult
 	{
-		public ulong value;
+		public ulong? value;
 	}
 
 	public class DBConfigModel

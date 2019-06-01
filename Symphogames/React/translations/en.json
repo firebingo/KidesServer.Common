@@ -30,5 +30,5 @@
   "TURN_SUBMIT_WAIT": "Please Wait...",
   "SUBMIT_TURN": "Submit Turn",
   "LOADING": "Loading...",
-  "Error": "Error: {{msg}}"
+  "ERROR": "Error: {{msg}}"
 }
