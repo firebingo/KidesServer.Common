@@ -11,9 +11,10 @@ namespace Symphogames.Models
 {
 	public enum PlayerRole
 	{
-		Admin,
-		Moderator,
-		Player
+		Unknown = 0,
+		Player = 1,
+		Moderator = 2,
+		Admin = 3
 	}
 
 	public enum SPlayerState
@@ -28,6 +29,7 @@ namespace Symphogames.Models
 		public readonly uint Id;
 		public readonly string Name;
 		public readonly string Password;
+		public readonly string Description;
 		public readonly string Salt;
 		public readonly bool IsVerified;
 		public readonly PlayerRole Role;
@@ -49,16 +51,18 @@ namespace Symphogames.Models
 		{
 			Id = id;
 			Name = iName;
+			Description = "";
 			Salt = Guid.NewGuid().ToString("n");
 			Avatar = "default";
 			IsVerified = false;
 			Role = PlayerRole.Player;
 		}
 
-		public SPlayer(uint id, string iName, string iSalt, string IAvatar, string iPassword, bool iVerified, PlayerRole iRole)
+		public SPlayer(uint id, string iName, string iDes, string iSalt, string IAvatar, string iPassword, bool iVerified, PlayerRole iRole)
 		{
 			Id = id;
 			Name = iName;
+			Description = iDes;
 			Salt = iSalt;
 			Avatar = IAvatar;
 			Password = iPassword;
@@ -126,15 +130,20 @@ namespace Symphogames.Models
 
 	public class SDistrict
 	{
-		public string Name;
 		public readonly uint Id;
-		public Dictionary<uint, SGamePlayer> Players;
+		public readonly uint GameId;
+		public readonly string Name;
+		public readonly string Description;
+		public readonly List<uint> PlayerIds;
+		Dictionary<uint, SGamePlayer> Players; //TODO: Once i have the rest of the structure for a game player sorted out figure out loading this with the district.
 
-		public SDistrict(string iName, uint id, Dictionary<uint, SGamePlayer> iP)
+		public SDistrict(uint id, uint gameId, string districtName, string description, List<uint> playerIds)
 		{
-			Name = iName;
 			Id = id;
-			Players = iP;
+			GameId = gameId;
+			Name = districtName;
+			Description = description;
+			PlayerIds = playerIds;
 		}
 	}
 }

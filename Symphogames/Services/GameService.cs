@@ -1,4 +1,5 @@
 ﻿using KidesServer.Common;
+using KidesServer.Common.DataBase;
 using Microsoft.Extensions.Options;
 using Symphogames.Helpers;
 using Symphogames.Logic;
@@ -14,13 +15,16 @@ namespace Symphogames.Services
 	public class GameService
 	{
 		private readonly AppSettings _appSettings;
-		public readonly ConcurrentDictionary<uint, SGame> CurrentGames;
-		private readonly ConcurrentDictionary<uint, GamesThread> _gameThreads;
+		private readonly PlayerService _playerService;
+		//public readonly ConcurrentDictionary<uint, SGame> CurrentGames;
+		//private readonly ConcurrentDictionary<uint, GamesThread> _gameThreads;
 
-		public GameService(IOptions<AppSettings> appSettings)
+		public GameService(IOptions<AppSettings> appSettings,
+			PlayerService playerService)
 		{
-			CurrentGames = new ConcurrentDictionary<uint, SGame>();
-			_gameThreads = new ConcurrentDictionary<uint, GamesThread>();
+			//CurrentGames = new ConcurrentDictionary<uint, SGame>();
+			//_gameThreads = new ConcurrentDictionary<uint, GamesThread>();
+			_playerService = playerService;
 			_appSettings = appSettings.Value;
 		}
 
@@ -54,10 +58,27 @@ namespace Symphogames.Services
 		//	}
 		//}
 
-		public async Task<UIntResult> CreateGame(uint id, string name, string image, int width, int height, List<DistrictInput> districts, int? seed = null)
+		public async Task<UIntResult> CreateGame(CreateGameInput input)
 		{
+			var verifyResult = await VerifyCreateGameInput(input);
+			if (!string.IsNullOrWhiteSpace(verifyResult))
+			{
+				return new UIntResult()
+				{
+					success = false,
+					message = verifyResult
+				};
+			}
+
 			var res = new UIntResult();
-			var game = new SGame(id, name, width, height, seed ?? (int)(id + name.ToCharArray().Sum(x => x) + width + height + districts.Count + DateTime.UtcNow.Millisecond));
+			var id = await GetNextGameId();
+			var game = new SGame(id, input.GameName, input.GameDescription, input.MapId, null, null, input.Seed, input.IsPastViewable, input.ModeratorIds);
+
+			foreach(var district in input.Districts)
+			{
+
+			}
+
 			for (int i = 0; i < districts.Count; ++i)
 			{
 				Dictionary<uint, SGamePlayer> dPlayers = new Dictionary<uint, SGamePlayer>();
@@ -86,6 +107,35 @@ namespace Symphogames.Services
 			res.message = string.Empty;
 			res.value = game.Id;
 			return res;
+		}
+
+		private async Task<string> VerifyCreateGameInput(CreateGameInput input)
+		{
+			if(input.Districts == null || string.IsNullOrWhiteSpace(input.GameName))
+				return "INVALID_INPUT";
+
+			foreach(var d in input.Districts)
+			{
+				if (string.IsNullOrWhiteSpace(d.Name) || d.PlayerIds == null)
+					return $"INVALID_DISTRICT|{d.Name}";
+
+				foreach(var player in d.PlayerIds)
+				{
+					if(!await _playerService.GetPlayerExistsById(player))
+						return $"USER_NOT_EXIST|{player}";
+				}
+			}
+
+			if (input.ModeratorIds != null)
+			{
+				foreach (var mod in input.ModeratorIds)
+				{
+					if (!await _playerService.GetPlayerExistsById(mod))
+						return $"USER_NOT_EXIST|{mod}";
+				}
+			}
+
+			return string.Empty;
 		}
 
 		public Task<JoinGameResult> GetPlayerAccessData(uint gameId, uint playerId)
@@ -255,6 +305,12 @@ namespace Symphogames.Services
 			res.message = string.Empty;
 
 			return res;
+		}
+
+		public async Task<uint> GetNextGameId()
+		{
+			var sql = "SELECT AUTO_INCREMENT FROM games";
+			return await DataLayerShortcut.ExecuteScalarAsync<uint>(_appSettings.Database.ConnectionString, sql);
 		}
 	}
 }

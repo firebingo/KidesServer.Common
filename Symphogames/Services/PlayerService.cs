@@ -240,13 +240,17 @@ namespace Symphogames.Services
 			try
 			{
 				uint? id = reader.GetValue(0) as uint?;
-				PlayerRole role = (PlayerRole)((reader.GetValue(4) as uint?) ?? 2);
+				if (!id.HasValue)
+					return Task.CompletedTask;
+
+				PlayerRole role = (PlayerRole)((reader.GetValue(5) as uint?) ?? 0);
 				var row = new SPlayer(id ?? 0,
 					reader.GetValue(1) as string,
+					reader.GetValue(4) as string,
 					reader.GetValue(3) as string,
-					reader.GetValue(5) as string,
+					reader.GetValue(6) as string,
 					reader.GetValue(2) as string,
-					reader.GetBoolean(6),
+					reader.GetBoolean(7),
 					role);
 				data.Add(row);
 			}

@@ -52,6 +52,7 @@ namespace Symphogames
 			services.AddMemoryCache();
 
 			services.AddSingleton<SymphogamesConfigService>();
+			services.AddScoped<UserRoleCheckAttribute>();
 			services.AddScoped<LoginService>();
 			services.AddScoped<PlayerService>();
 			services.AddSingleton<GameService>();
@@ -73,6 +74,11 @@ namespace Symphogames
 					ValidateAudience = false
 				};
 			});
+
+			//services.AddAuthorization(options =>
+			//{
+			//	options.AddPolicy()
+			//});
 		}
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

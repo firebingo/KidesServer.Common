@@ -9,10 +9,13 @@ namespace Symphogames.Models
 	public class CreateGameInput
 	{
 		public string GameName;
+		public string GameDescription;
 		public string MapImage;
-		public Vector2<int> Size;
+		public uint MapId;
+		public bool IsPastViewable;
 		public List<DistrictInput> Districts;
 		public int? Seed;
+		public List<uint> ModeratorIds;
 	}
 
 	public class DistrictInput

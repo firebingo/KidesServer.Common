@@ -44,29 +44,39 @@ namespace Symphogames.Models
 	{
 		public readonly uint Id;
 		public readonly string Name;
-		public bool Started { get; private set; }
+		public readonly string Description;
+		public readonly bool Started;
+		public readonly uint MapId;
 		public readonly SMap Map;
 		public readonly Dictionary<uint, SDistrict> Districts;
-		public readonly List<STurn> Turns;
+		public readonly int PlayerCount;
+		public readonly int RandomSeed;
+		public readonly bool Completed;
+		public readonly bool IsPastViewable; //Whether or not the game can be replayed in the interface later
+		public readonly List<uint> ModeratorIds;
+		//public readonly List<STurn> Turns;
 		//TODO: Make a config for things like turns in day etc.
-		public int CurrentTurn { get; private set; }
-		public CurrentTime TimeOfDay { get; private set; }
-		public bool Completed { get; private set; }
-		public bool IsPastViewable { get; private set; } //Whether or not the game can be replayed in the interface later
-		public int PlayerCount { get; private set; }
-		public int RandomSeed { get; private set; }
+		//public int CurrentTurn { get; private set; }
+		//public CurrentTime TimeOfDay { get; private set; }
 
-		public SGame(uint id, string iN, int width, int height, int seed)
+		public SGame(uint id, string name, string description, uint mapId, SMap map, Dictionary<uint, SDistrict> districts, int? seed, bool isPastViewable, List<uint> moderatorIds)
 		{
+			if (!seed.HasValue)
+				seed = (int)(id + name.ToCharArray().Sum(x => x) + DateTime.UtcNow.Millisecond);
+
 			Id = id;
-			Name = iN;
+			Name = name;
+			Description = description;
 			Started = false;
-			Map = new SMap(new Vector2<int>(width, height));
-			Districts = new Dictionary<uint, SDistrict>();
-			Turns = new List<STurn>() { new STurn() };
-			CurrentTurn = 0;
-			TimeOfDay = CurrentTime.Day;
-			RandomSeed = seed;
+			MapId = mapId;
+			Map = map;
+			Districts = districts;
+			PlayerCount = districts?.Sum(x => x.Value?.Players?.Count ?? 0) ?? 0;
+			Completed = false;
+			IsPastViewable = isPastViewable;
+			//Turns = new List<STurn>() { new STurn() };
+			RandomSeed = seed.Value;
+			ModeratorIds = moderatorIds;
 		}
 
 		public bool AllTurnsSubmitted

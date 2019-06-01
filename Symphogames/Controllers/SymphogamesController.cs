@@ -20,22 +20,23 @@ namespace KidesServer.Controllers
 	{
 		private readonly AppSettings _appSettings;
 		private readonly PlayerService _playerService;
+		private readonly GameService _gameService;
 
 		public SymphogamesController(IOptions<AppSettings> appSettings,
-			PlayerService playerService)
+			PlayerService playerService,
+			GameService gameService)
 		{
 			_playerService = playerService;
+			_gameService = gameService;
 			_appSettings = appSettings.Value;
 		}
 
 		[Returns(typeof(UIntResult))]
 		[Authorize]
+		[UserRoleCheck(PlayerRole.Admin)]
 		[HttpPost, Route("create-player")]
 		public async Task<IActionResult> CreatePlayer([FromQuery]string playerName)
 		{
-			var claim = User.Identity as ClaimsIdentity;
-			var role = Enum.Parse(typeof(PlayerRole), claim.FindFirst(ClaimTypes.Role).Value);
-
 			var result = await _playerService.CreatePlayer(playerName);
 			
 			if (result.success)
@@ -58,10 +59,25 @@ namespace KidesServer.Controllers
 
 		[Returns(typeof(UIntResult))]
 		[Authorize]
+		[UserRoleCheck(PlayerRole.Moderator)]
 		[HttpPost, Route("create-game")]
 		public async Task<IActionResult> CreateGame([FromBody]CreateGameInput input)
 		{
-			var result = await GamesLogic.CreateGame(input);
+			var result = await _gameService.CreateGame(input);
+
+			if (result.success)
+				return Ok(result);
+			else
+				return BadRequest(result);
+		}
+
+		[Returns(typeof(UIntResult))]
+		[Authorize]
+		[UserRoleCheck(PlayerRole.Moderator)]
+		[HttpPost, Route("start-game")]
+		public async Task<IActionResult> StartGame([FromBody]CreateGameInput input)
+		{
+			var result = await GamesLogic.StartGame(input);
 
 			if (result.success)
 				return Ok(result);
@@ -71,6 +87,7 @@ namespace KidesServer.Controllers
 
 		[Returns(typeof(JoinGameResult))]
 		[Authorize]
+		[UserRoleCheck(PlayerRole.Player)]
 		[HttpGet, Route("join-game")]
 		public async Task<IActionResult> Join([FromQuery]uint gameId, [FromQuery]uint playerId)
 		{
@@ -84,6 +101,7 @@ namespace KidesServer.Controllers
 
 		[Returns(typeof(CurrentGamePlayerInfo))]
 		[Authorize]
+		[UserRoleCheck(PlayerRole.Player)]
 		[HttpGet, Route("current-player-game-info")]
 		public async Task<IActionResult> GetCurrentPlayerInfo([FromQuery]uint gameId)
 		{
@@ -99,6 +117,7 @@ namespace KidesServer.Controllers
 
 		[Returns(typeof(BaseResult))]
 		[Authorize]
+		[UserRoleCheck(PlayerRole.Player)]
 		[HttpPost, Route("submit-turn")]
 		public async Task<IActionResult> SubmitTurn([FromQuery]uint gameId, [FromBody]SActionInfo action)
 		{
@@ -114,6 +133,7 @@ namespace KidesServer.Controllers
 
 		[Returns(typeof(PhysicalFileResult))]
 		[Authorize]
+		[UserRoleCheck(PlayerRole.Unknown)]
 		[HttpGet, Route("image")]
 		public IActionResult GetImage([FromQuery]SImageType type, [FromQuery]string name)
 		{
