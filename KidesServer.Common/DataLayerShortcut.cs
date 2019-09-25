@@ -34,7 +34,7 @@ namespace KidesServer.Common.DataBase
 			return result;
 		}
 
-		public static void ExecuteReader<T>(Action<IDataReader, T> workFunction, T otherdata, string connectionString, string query, params MySqlParameter[] parameters)
+		public static void ExecuteReader<T>(Action<IDataReader, IDbConnection, T> workFunction, T otherdata, string connectionString, string query, params MySqlParameter[] parameters)
 		{
 			using (var connection = new MySqlConnection(connectionString))
 			{
@@ -44,7 +44,7 @@ namespace KidesServer.Common.DataBase
 			}
 		}
 
-		public static void ExecuteReader<T>(Action<IDataReader, T> workFunction, T otherdata, MySqlConnection connection, string query, params MySqlParameter[] parameters)
+		public static void ExecuteReader<T>(Action<IDataReader, IDbConnection, T> workFunction, T otherdata, MySqlConnection connection, string query, params MySqlParameter[] parameters)
 		{
 			if (connection == null)
 				return;
@@ -58,14 +58,14 @@ namespace KidesServer.Common.DataBase
 				var reader = cmd.ExecuteReader();
 
 				while (reader.Read())
-					workFunction(reader, otherdata);
+					workFunction(reader, connection, otherdata);
 
 				reader.Close();
 				cmd.Dispose();
 			}
 		}
 
-		public static async Task ExecuteReaderAsync<T>(Func<IDataReader, T, Task> workFunction, T otherdata, string connectionString, string query, params MySqlParameter[] parameters)
+		public static async Task ExecuteReaderAsync<T>(Func<IDataReader, IDbConnection, T, Task> workFunction, T otherdata, string connectionString, string query, params MySqlParameter[] parameters)
 		{
 			using (var connection = new MySqlConnection(connectionString))
 			{
@@ -75,7 +75,7 @@ namespace KidesServer.Common.DataBase
 			}
 		}
 
-		public static async Task ExecuteReaderAsync<T>(Func<IDataReader, T, Task> workFunction, T otherdata, MySqlConnection connection, string query, params MySqlParameter[] parameters)
+		public static async Task ExecuteReaderAsync<T>(Func<IDataReader, IDbConnection, T, Task> workFunction, T otherdata, MySqlConnection connection, string query, params MySqlParameter[] parameters)
 		{
 			if (connection == null)
 				return;
@@ -89,7 +89,7 @@ namespace KidesServer.Common.DataBase
 				var reader = await cmd.ExecuteReaderAsync();
 
 				while (reader.Read())
-					await workFunction(reader, otherdata);
+					await workFunction(reader, connection, otherdata);
 
 				reader.Close();
 				cmd.Dispose();
