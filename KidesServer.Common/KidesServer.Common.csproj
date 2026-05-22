@@ -1,15 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Platforms>x64</Platforms>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.Core" Version="3.5.1.25" />
-    <PackageReference Include="AWSSDK.SQS" Version="3.5.0.27" />
-    <PackageReference Include="MySql.Data" Version="8.0.21" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="AWSSDK.Core" Version="4.0.7.3" />
+    <PackageReference Include="AWSSDK.SQS" Version="4.0.2.31" />
+    <PackageReference Include="MySql.Data" Version="9.7.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
   </ItemGroup>
 
 </Project>

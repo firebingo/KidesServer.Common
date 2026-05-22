@@ -33,7 +33,7 @@ namespace KidesServer.Common
 			get
 			{
 				if (_connectionString == null)
-					_connectionString = $"server={address};port={port};uid={userName};pwd={password};database={schemaName};charset=utf8mb4;Allow User Variables=True;SslMode=none";
+					_connectionString = $"server={address};port={port};uid={userName};pwd={password};database={schemaName};charset=utf8mb4;Allow User Variables=True;SslMode=disabled";
 				return _connectionString;
 			}
 		}
